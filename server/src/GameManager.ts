@@ -67,7 +67,7 @@ export class GameManager {
         );
 
         if (game) {
-          game.makeMove(socket, message.move);
+          game.makeMove(game, socket, message.move);
         } else {
           socket.emit("message", {
             type: ERROR,

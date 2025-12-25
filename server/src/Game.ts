@@ -17,12 +17,13 @@ export class Game {
     this.startTime = new Date();
   }
 
-  makeMove(player: Socket, move: { from: string; to: string }) {
+  makeMove(game: Game, player: Socket, move: { from: string; to: string }) {
     // It is the user move?
     try {
       const movePlayed = this.board.move({ from: move.from, to: move.to });
 
-      player.emit("message", { type: MOVE, payload: movePlayed });
+      game.player1.emit("message", { type: MOVE, payload: movePlayed });
+      game.player2.emit("message", { type: MOVE, payload: movePlayed });
     } catch (error) {
       // Illegal move
       console.log("⚠️ Illegal move", error);
