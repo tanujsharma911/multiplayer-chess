@@ -20,10 +20,22 @@ export class Game {
   makeMove(game: Game, player: Socket, move: { from: string; to: string }) {
     // It is the user move?
     try {
-      const movePlayed = this.board.move({ from: move.from, to: move.to });
+      this.board.move({ from: move.from, to: move.to });
 
-      game.player1.emit("message", { type: MOVE, payload: movePlayed });
-      game.player2.emit("message", { type: MOVE, payload: movePlayed });
+      game.player1.emit("message", {
+        type: MOVE,
+        payload: {
+          board: this.board.fen(),
+          turn: this.board.turn(),
+        },
+      });
+      game.player2.emit("message", {
+        type: MOVE,
+        payload: {
+          board: this.board.fen(),
+          turn: this.board.turn(),
+        },
+      });
     } catch (error) {
       // Illegal move
       console.log("⚠️ Illegal move", error);
@@ -35,7 +47,7 @@ export class Game {
       return;
     }
 
-    // Check is the check/checkmate/stalemate
+    // Check is the heckmate/stalemate
     if (this.board.isGameOver()) {
       this.player1.emit("message", {
         type: GAME_OVER,
@@ -48,6 +60,5 @@ export class Game {
       console.log("💀 Gameover");
       return;
     }
-    // Send the updated board to both players
   }
 }

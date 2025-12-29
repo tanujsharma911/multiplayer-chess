@@ -23,6 +23,10 @@ export class GameManager {
   removeUser(socket: Socket) {
     this.users.filter((user) => user !== socket);
 
+    if (this.pendingUser === socket) this.pendingUser = null;
+
+    
+
     //TODO: Stop the game because user left the game
     //TODO: or can have reconnect logic
   }
@@ -30,6 +34,8 @@ export class GameManager {
   addHandler(socket: Socket) {
     socket.on("message", (msg) => {
       const message = JSON.parse(JSON.stringify(msg));
+
+      console.log("🗣️ User message:", message);
 
       // --------------------------------- INIT_GAME ----------------------------------
       if (message.type === INIT_GAME) {

@@ -6,7 +6,11 @@ import { GameManager } from "./GameManager.js";
 
 const app = express();
 const server = createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: ["http://localhost:5173"],
+  },
+});
 
 const gameManager = new GameManager();
 
