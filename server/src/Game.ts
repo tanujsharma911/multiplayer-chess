@@ -20,12 +20,13 @@ export class Game {
   makeMove(game: Game, player: Socket, move: { from: string; to: string }) {
     // It is the user move?
     try {
-      this.board.move({ from: move.from, to: move.to });
+      const moved = this.board.move({ from: move.from, to: move.to });
 
       game.player1.emit("message", {
         type: MOVE,
         payload: {
           board: this.board.fen(),
+          move: moved,
           turn: this.board.turn(),
         },
       });
@@ -33,6 +34,7 @@ export class Game {
         type: MOVE,
         payload: {
           board: this.board.fen(),
+          move: moved,
           turn: this.board.turn(),
         },
       });

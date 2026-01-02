@@ -17,7 +17,7 @@ export const useGame = create<{
   game: {
     turn: null,
     you: null,
-    status: "none",
+    status: "init_game",
   },
   setQueue: () =>
     set((state) => ({ ...state, game: { ...state.game, status: INQUEUE } })),

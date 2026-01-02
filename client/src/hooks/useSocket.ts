@@ -15,8 +15,6 @@ export const useSocket = (): Socket | null => {
     });
 
     newSocket.on("message", (msg) => {
-      // console.log("⚙️ Message from server: ", msg);
-
       if (msg?.type === INQUEUE) {
         setQueue();
       }

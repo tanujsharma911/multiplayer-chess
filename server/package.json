@@ -15,6 +15,7 @@
     "@types/express": "^5.0.6",
     "chess.js": "^1.4.0",
     "express": "^5.2.1",
+    "express-openid-connect": "^2.19.3",
     "socket.io": "^4.8.1"
   }
 }

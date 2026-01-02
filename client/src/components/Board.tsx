@@ -1,8 +1,11 @@
 import type { Chess, Square } from "chess.js";
-import { useState } from "react";
 import type { Socket } from "socket.io-client";
-import { MOVE } from "../App";
-import Piece from "../components/Piece";
+import { DndContext, type DragEndEvent } from "@dnd-kit/core";
+
+import { GAME_OVER, MOVE } from "../App";
+import BoardSquare from "./BoardSquare";
+import { useGame } from "../store/game";
+import { useEffect, useState } from "react";
 
 interface BoardProps {
   chess?: Chess;
@@ -10,93 +13,84 @@ interface BoardProps {
   socket?: Socket | null;
 }
 
+const moveSound = new Audio("/sounds/move.wav");
+const gameOver = new Audio("/sounds/game-over.mp3");
+
 const Board = (props: BoardProps) => {
-  const { chess, boardVerision, socket } = props;
+  const { chess, socket } = props;
 
-  const [from, setFrom] = useState<Square | null>(null);
+  const { game } = useGame();
 
-  const handleOnClick = (coord: Square) => {
-    if (!socket) {
-      alert("no socket");
-      return;
-    }
+  const [blackBottom, setblackBottom] = useState(false);
 
-    if (!from) {
-      setFrom(coord);
-    } else if (from === coord) {
-      setFrom(null);
-    } else {
-      try {
-        chess?.move({ from: from, to: coord });
+  const sendMove = (from: string, to: string) => {
+    socket?.emit("message", {
+      type: MOVE,
+      move: { from: from, to: to },
+    });
+  };
 
-        socket?.emit("message", {
-          type: MOVE,
-          move: { from: from, to: coord },
-        });
+  const handleDragEnd = (event: DragEndEvent) => {
+    if (!event.over || !chess || !socket) return;
 
-        setFrom(null);
-      } catch (error) {
-        setFrom(null);
-        alert("Illegal move");
-        console.log("Board.tsx :: ", error);
-        return;
-      }
+    const from = event.active.id as Square;
+    const to = event.over.id as Square;
+
+    if (from === to) return;
+
+    try {
+      chess.move({ from, to });
+
+      moveSound.play();
+
+      sendMove(from, to);
+    } catch (err) {
+      console.log("Illegal move", err);
     }
   };
 
+  useEffect(() => {
+    if (game.status === GAME_OVER) {
+      gameOver.play();
+    }
+
+    const setBoardDetails = () => {
+      if (game.you === "b") {
+        setblackBottom(true);
+      } else {
+        setblackBottom(false);
+      }
+    };
+
+    setBoardDetails();
+  }, [game]);
+
   return (
-    <>
-      <div className="aspect-square">
+    <DndContext onDragEnd={handleDragEnd}>
+      <div className={blackBottom ? "rotate-180" : ""}>
         {chess &&
           chess.board().map((row, r) => {
             return (
               <div key={r} className="flex">
                 {row.map((cell, c) => {
-                  const colIndex: string = String.fromCharCode(97 + c);
-                  const rowIndex: string = 8 - r + "";
                   return (
-                    <div
-                      key={c + r}
-                      className={`relative w-10 sm:w-12 md:w-14 lg:w-16 h-10 sm:h-12 md:h-14 lg:h-16 ${
-                        (r + c) % 2 === 0
-                          ? "bg-gray-300 text-gray-400"
-                          : "bg-gray-400 text-gray-300"
-                      }`}
-                      onClick={() =>
-                        handleOnClick((colIndex + rowIndex) as Square)
+                    <BoardSquare
+                      key={r + c}
+                      cell={cell}
+                      c={c}
+                      r={r}
+                      blackBottom={blackBottom}
+                      isAllowed={
+                        game.turn === game.you && game.you === cell?.color
                       }
-                    >
-                      {/* Coordinates */}
-                      <div className="absolute inset-0 flex flex-col justify-between">
-                        <span className="text-sm px-1 font-semibold">
-                          {c === 0 && rowIndex}
-                        </span>
-                        <span className="text-sm px-1 w-full text-right font-semibold">
-                          {1 === 8 - r && colIndex}
-                        </span>
-                      </div>
-
-                      {/* Piece */}
-                      <div
-                        className={`absolute inset-0 grid place-items-center text-bold text-2xl text-${
-                          cell?.color === "b" ? "black" : "white"
-                        }`}
-                      >
-                        {cell?.type && (
-                          <Piece
-                            type={cell?.color + cell?.type.toLocaleUpperCase()}
-                          />
-                        )}
-                      </div>
-                    </div>
+                    />
                   );
                 })}
               </div>
             );
           })}
       </div>
-      <p className="text-gray-500">from: {from}</p>
-    </>
+    </DndContext>
   );
 };
 

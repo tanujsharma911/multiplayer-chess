@@ -21,11 +21,16 @@ function App() {
   }, [socket]);
 
   return (
-    <div className="bg-gray-800 flex flex-col items-center h-screen text-white">
-      <div className="h-full">
+    <div className="bg-gray-900 min-h-screen text-white">
+      <div className=" bg-gray-800 flex justify-center">
+        <div className="w-full max-w-5xl flex items-center gap-2 p-2">
+          <p className="font-black text-xl">Chess</p>
+        </div>
+      </div>
+      <div className="h-full w-full relative px-5">
         <Outlet />
       </div>
-      <div className="absolute bottom-0 p-2 text-center text-sm text-gray-400">
+      <div className="p-2 text-center text-sm text-gray-400">
         Made by{" "}
         <a href="https://github.com/tanujsharma911" className="underline">
           Tanuj Sharma

@@ -2,7 +2,7 @@ import { Chess } from "chess.js";
 import Board from "../components/Board";
 import { useSocketStore } from "../store/socket";
 import { useEffect, useState } from "react";
-import { INIT_GAME, MOVE } from "../App";
+import { INIT_GAME, INQUEUE, MOVE } from "../App";
 import { useGame } from "../store/game";
 
 type messageType = {
@@ -10,13 +10,26 @@ type messageType = {
   payload: {
     board: string;
     turn: "w" | "b";
+    move: MoveType;
   };
 };
+
+interface MoveType {
+  after?: string;
+  before?: string;
+  color?: string;
+  from?: string;
+  to?: string;
+  lan?: string;
+  san?: string;
+  piece?: string;
+}
 
 const Game = () => {
   const { socket } = useSocketStore();
 
   const [chess, setChess] = useState(new Chess());
+  const [moves, setMoves] = useState<MoveType[]>([]);
   const [boardVerision, setBoardVerision] = useState(0);
 
   const { game, setTurn } = useGame();
@@ -27,12 +40,14 @@ const Game = () => {
 
     const handler = (msg: messageType) => {
       if (msg.type === MOVE) {
-        console.log("message from server:", msg);
         const newChess = new Chess(msg.payload.board);
 
         setBoardVerision((v) => v + 1);
 
+        setMoves((prev) => [...prev, msg.payload.move]);
+
         setChess(newChess);
+
         setTurn(msg.payload.turn);
       }
     };
@@ -45,34 +60,56 @@ const Game = () => {
   }, [socket]);
 
   return (
-    <div className="h-full">
-      <div className="max-w-5xl mx-auto h-full gap-4 p-4 grid grid-cols-1 md:grid-cols-[auto_1fr]">
-        <div>
+    <div className="h-full mt-4">
+      <div className="mx-auto max-w-5xl gap-5 grid grid-cols-1 lg:grid-cols-[auto_1fr]">
+        {/* Board */}
+        <div className="flex flex-col gap-2">
+          {game.status === INQUEUE ? (
+            <div className="flex items-center mb-2 gap-4">
+              <div className="w-10 h-10 rounded-full bg-gray-600 animate-pulse" />
+
+              <div className="flex-1 h-4 bg-gray-600 animate-pulse rounded" />
+            </div>
+          ) : (
+            <div className="flex items-center mb-2 gap-4">
+              <img
+                src="https://api.dicebear.com/9.x/thumbs/svg?seed=opponent"
+                alt="opponent avatar"
+                className="w-10 h-10 rounded-full"
+              />
+              opponent name
+            </div>
+          )}
           <Board chess={chess} boardVerision={boardVerision} socket={socket} />
+          <div className="flex items-center mb-2 gap-4">
+            <img
+              src="https://api.dicebear.com/9.x/thumbs/svg?seed=you"
+              alt="your avatar"
+              className="w-10 h-10 rounded-full"
+            />
+            your name
+          </div>
         </div>
-        <div className="font-mono text-green-800">
+
+        {/* Details */}
+        <div className="bg-gray-800 font-mono min-w-sm p-5 rounded-xl">
           Details
-          <p>
-            status:
-            <strong className="text-green-500 text-shadow-md text-shadow-green-300/10">
-              {" "}
-              {game.status}
-            </strong>
-          </p>
-          <p>
-            you:
-            <strong className="text-green-500 text-shadow-md text-shadow-green-300/10">
-              {" "}
-              {game.you === "w" ? "white" : "black"}
-            </strong>
-          </p>
-          <p>
-            turn:
-            <strong className="text-green-500 text-shadow-md text-shadow-green-300/10">
-              {" "}
-              {game.turn === "w" ? "white" : "black"}
-            </strong>
-          </p>
+          <p>you: {game.you}</p>
+          <p>turn: {game.turn}</p>
+          <p>status: {game.status}</p>
+          <div className="grid max-h-100 grid-cols-2 overflow-y-scroll">
+            {moves.map((move, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-6 py-1 px-2 rounded"
+              >
+                <div className="text-gray-500">
+                  {index % 2 === 0 && index / 2 + 1 + "."}
+                </div>
+                <div>{move.san}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
