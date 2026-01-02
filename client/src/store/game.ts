@@ -33,5 +33,6 @@ export const useGame = create<{
     })),
   setTurn: (data: "w" | "b") =>
     set((state) => ({ game: { ...state.game, turn: data } })),
-  setOver: () => set({ game: { turn: null, you: null, status: GAME_OVER } }),
+  setOver: () =>
+    set((state) => ({ game: { ...state.game, status: GAME_OVER } })),
 }));

@@ -1,6 +1,7 @@
 import { useDroppable } from "@dnd-kit/core";
-import type { Color, PieceSymbol, Square } from "chess.js";
+import type { Color, Move, PieceSymbol, Square } from "chess.js";
 import Piece from "./Piece";
+import { useEffect } from "react";
 
 interface SquareProps {
   cell: { square: Square; type: PieceSymbol; color: Color } | null;
@@ -8,10 +9,11 @@ interface SquareProps {
   c: number;
   isAllowed?: boolean;
   blackBottom?: boolean;
+  valideMoves?: Move[];
 }
 
 const BoardSquare = (props: SquareProps) => {
-  const { cell, isAllowed, r, c, blackBottom } = props;
+  const { cell, isAllowed, r, c, blackBottom, valideMoves } = props;
 
   const colIndex: string = String.fromCharCode(97 + c);
   const rowIndex: string = 8 - r + "";
@@ -21,6 +23,10 @@ const BoardSquare = (props: SquareProps) => {
   const { setNodeRef } = useDroppable({
     id: squareId,
   });
+
+  useEffect(() => {
+    console.log("valideMoves updated in Square:", valideMoves);
+  }, [valideMoves]);
 
   return (
     <div
@@ -52,6 +58,13 @@ const BoardSquare = (props: SquareProps) => {
         >
           {blackBottom ? 8 === 8 - r && colIndex : 1 === 8 - r && colIndex}
         </span>
+      </div>
+
+      {/* Valid Move Dot */}
+      <div className="absolute inset-0 grid place-items-center">
+        {valideMoves?.some((move) => move.to === squareId) && (
+          <div className="w-4 h-4 rounded-full bg-gray-500/70"></div>
+        )}
       </div>
 
       {/* Piece */}

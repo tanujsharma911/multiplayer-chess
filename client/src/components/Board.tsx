@@ -1,8 +1,12 @@
-import type { Chess, Square } from "chess.js";
+import type { Chess, Move, Square } from "chess.js";
 import type { Socket } from "socket.io-client";
-import { DndContext, type DragEndEvent } from "@dnd-kit/core";
+import {
+  DndContext,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
 
-import { GAME_OVER, MOVE } from "../App";
+import { MOVE } from "../App";
 import BoardSquare from "./BoardSquare";
 import { useGame } from "../store/game";
 import { useEffect, useState } from "react";
@@ -13,15 +17,13 @@ interface BoardProps {
   socket?: Socket | null;
 }
 
-const moveSound = new Audio("/sounds/move.wav");
-const gameOver = new Audio("/sounds/game-over.mp3");
-
 const Board = (props: BoardProps) => {
   const { chess, socket } = props;
 
   const { game } = useGame();
 
   const [blackBottom, setblackBottom] = useState(false);
+  const [valideMoves, setValideMoves] = useState<Move[]>([]);
 
   const sendMove = (from: string, to: string) => {
     socket?.emit("message", {
@@ -41,19 +43,24 @@ const Board = (props: BoardProps) => {
     try {
       chess.move({ from, to });
 
-      moveSound.play();
-
       sendMove(from, to);
     } catch (err) {
       console.log("Illegal move", err);
     }
+    setValideMoves([]);
+  };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    if (!chess || !socket) return;
+
+    const from = event.active.id as Square;
+
+    const moves = chess.moves({ square: from, verbose: true });
+
+    setValideMoves(moves);
   };
 
   useEffect(() => {
-    if (game.status === GAME_OVER) {
-      gameOver.play();
-    }
-
     const setBoardDetails = () => {
       if (game.you === "b") {
         setblackBottom(true);
@@ -66,7 +73,7 @@ const Board = (props: BoardProps) => {
   }, [game]);
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
+    <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
       <div className={blackBottom ? "rotate-180" : ""}>
         {chess &&
           chess.board().map((row, r) => {
@@ -80,6 +87,7 @@ const Board = (props: BoardProps) => {
                       c={c}
                       r={r}
                       blackBottom={blackBottom}
+                      valideMoves={valideMoves}
                       isAllowed={
                         game.turn === game.you && game.you === cell?.color
                       }

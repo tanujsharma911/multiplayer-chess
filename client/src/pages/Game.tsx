@@ -25,12 +25,16 @@ interface MoveType {
   piece?: string;
 }
 
+const moveSound = new Audio("/sounds/move.wav");
+const gameOver = new Audio("/sounds/game-end.mp3");
+
 const Game = () => {
   const { socket } = useSocketStore();
 
   const [chess, setChess] = useState(new Chess());
   const [moves, setMoves] = useState<MoveType[]>([]);
   const [boardVerision, setBoardVerision] = useState(0);
+  // const [openingComment, setOpeningComment] = useState("");
 
   const { game, setTurn } = useGame();
 
@@ -42,6 +46,12 @@ const Game = () => {
       if (msg.type === MOVE) {
         const newChess = new Chess(msg.payload.board);
 
+        if (chess.isGameOver()) {
+          gameOver.play();
+        } else {
+          moveSound.play();
+        }
+
         setBoardVerision((v) => v + 1);
 
         setMoves((prev) => [...prev, msg.payload.move]);
@@ -49,6 +59,7 @@ const Game = () => {
         setChess(newChess);
 
         setTurn(msg.payload.turn);
+
       }
     };
 
