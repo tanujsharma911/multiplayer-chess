@@ -2,8 +2,25 @@ import { Chess } from "chess.js";
 import Board from "../components/Board";
 import { useSocketStore } from "../store/socket";
 import { useEffect, useState } from "react";
-import { INIT_GAME, INQUEUE, MOVE } from "../App";
+import { GAME_OVER, INIT_GAME, INQUEUE, MOVE, TIME_OUT } from "../App";
 import { useGame } from "../store/game";
+import useUser from "@/store/user";
+import { Button } from "@/components/ui/button";
+// import {
+//   Tooltip,
+//   TooltipContent,
+//   TooltipTrigger,
+// } from "@/components/ui/tooltip";
+import { Clock } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useNavigate } from "react-router";
 
 type messageType = {
   type: string;
@@ -29,17 +46,22 @@ const moveSound = new Audio("/sounds/move.wav");
 const gameOver = new Audio("/sounds/game-end.mp3");
 
 const Game = () => {
+  const navigate = useNavigate();
   const { socket } = useSocketStore();
+  const { game, setTurn } = useGame();
+  const { user } = useUser();
 
   const [chess, setChess] = useState(new Chess());
   const [moves, setMoves] = useState<MoveType[]>([]);
   const [boardVerision, setBoardVerision] = useState(0);
-  // const [openingComment, setOpeningComment] = useState("");
-
-  const { game, setTurn } = useGame();
+  const [yourTimeLeft, setYourTimeLeft] = useState(10 * 60 * 1000);
+  const [opponentTimeLeft, setOpponentTimeLeft] = useState(10 * 60 * 1000);
+  const [gameoverDialog, setGameoverDialog] = useState(true);
 
   useEffect(() => {
-    if (!socket) return undefined;
+    if (!socket) {
+      return;
+    }
     socket.emit("message", { type: INIT_GAME });
 
     const handler = (msg: messageType) => {
@@ -59,56 +81,118 @@ const Game = () => {
         setChess(newChess);
 
         setTurn(msg.payload.turn);
-
       }
     };
 
     socket.on("message", handler);
 
-    return () => {
-      socket.off("message", handler);
+    const onLoad = () => {
+      setGameoverDialog(true);
     };
+
+    onLoad();
   }, [socket]);
 
-  return (
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (game.status !== INIT_GAME || !game.you) return;
+
+      if (game.turn === game.you) {
+        setYourTimeLeft((prev) => prev - 100);
+      } else {
+        setOpponentTimeLeft((prev) => prev - 100);
+      }
+
+      if (yourTimeLeft <= 0 || opponentTimeLeft <= 0) {
+        setGameoverDialog(true);
+
+        socket?.emit("message", {
+          type: TIME_OUT,
+          payload: { winner: game.turn === "w" ? "b" : "w" },
+        });
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [game]);
+
+  return !user.isLoggedIn ? (
+    <div className="flex items-center justify-center h-full py-20">
+      Please log in to play
+    </div>
+  ) : (
     <div className="h-full mt-4">
       <div className="mx-auto max-w-5xl gap-5 grid grid-cols-1 lg:grid-cols-[auto_1fr]">
         {/* Board */}
         <div className="flex flex-col gap-2">
-          {game.status === INQUEUE ? (
-            <div className="flex items-center mb-2 gap-4">
-              <div className="w-10 h-10 rounded-full bg-gray-600 animate-pulse" />
+          <div className="flex items-center mb-2 justify-between">
+            {game.status === INQUEUE ? (
+              <div className="flex items-center mb-2 gap-4 cursor-progress">
+                <div className="w-10 h-10 rounded-full bg-gray-600 animate-pulse" />
 
-              <div className="flex-1 h-4 bg-gray-600 animate-pulse rounded" />
+                <div className="flex-1 h-4 w-40 bg-gray-600 animate-pulse rounded" />
+              </div>
+            ) : (
+              <div className="flex items-center gap-4">
+                <img
+                  src={
+                    game.opponent?.avatar ||
+                    "https://api.dicebear.com/9.x/thumbs/svg?seed=opponent"
+                  }
+                  alt="opponent avatar"
+                  className="w-10 h-10 rounded-full"
+                />
+                {game.opponent?.name || "Opponent"}
+              </div>
+            )}
+            <div>
+              <Clock className="inline-block mr-2" />
+              {Math.floor(opponentTimeLeft / 1000 / 60)}:
+              {(Math.floor(opponentTimeLeft / 1000) % 60)
+                .toString()
+                .padStart(2, "0")}
             </div>
-          ) : (
-            <div className="flex items-center mb-2 gap-4">
+          </div>
+          <Board chess={chess} boardVerision={boardVerision} socket={socket} />
+          <div className="flex items-center mb-2 justify-between">
+            <div className="flex items-center gap-4">
               <img
-                src="https://api.dicebear.com/9.x/thumbs/svg?seed=opponent"
-                alt="opponent avatar"
+                src={
+                  user.avatar ||
+                  "https://api.dicebear.com/9.x/thumbs/svg?seed=you"
+                }
+                alt="your avatar"
                 className="w-10 h-10 rounded-full"
               />
-              opponent name
+              {user.name}
             </div>
-          )}
-          <Board chess={chess} boardVerision={boardVerision} socket={socket} />
-          <div className="flex items-center mb-2 gap-4">
-            <img
-              src="https://api.dicebear.com/9.x/thumbs/svg?seed=you"
-              alt="your avatar"
-              className="w-10 h-10 rounded-full"
-            />
-            your name
+
+            <div>
+              <Clock className="inline-block mr-2" />
+              {Math.floor(yourTimeLeft / 1000 / 60)}:
+              {(Math.floor(yourTimeLeft / 1000) % 60)
+                .toString()
+                .padStart(2, "0")}
+            </div>
           </div>
         </div>
 
         {/* Details */}
-        <div className="bg-gray-800 font-mono min-w-sm p-5 rounded-xl">
-          Details
-          <p>you: {game.you}</p>
-          <p>turn: {game.turn}</p>
-          <p>status: {game.status}</p>
-          <div className="grid max-h-100 grid-cols-2 overflow-y-scroll">
+        <div className="bg-gray-800 min-w-sm p-5 rounded-xl overflow-scroll">
+          {/* <p>status: {game.status}</p>
+          <div className="grid grid-cols-2 mb-4 gap-4">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" className="py-6">
+                  <Flag />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Resign</p>
+              </TooltipContent>
+            </Tooltip>
+          </div> */}
+          <div className="grid grid-cols-2">
             {moves.map((move, index) => (
               <div
                 key={index}
@@ -123,6 +207,45 @@ const Game = () => {
           </div>
         </div>
       </div>
+
+      <Dialog
+        open={game.status === GAME_OVER && gameoverDialog}
+        // open={true}
+        onOpenChange={setGameoverDialog}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>
+              {game.winner === game.you ? "You won!" : "You lost!"}
+            </DialogTitle>
+            <DialogDescription>
+              {game.winner !== game.you ? (
+                <img
+                  src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Animals/Donkey.png"
+                  alt="Donkey"
+                  width="250"
+                  height="250"
+                  className="mx-auto"
+                />
+              ) : (
+                <img
+                  src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Smiling%20Face%20with%20Sunglasses.png"
+                  alt="Smiling Face with Sunglasses"
+                  width="250"
+                  height="250"
+                  className="mx-auto"
+                />
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4"></div>
+          <DialogFooter>
+            <Button type="submit" onClick={() => navigate("/")}>
+              Go Home
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

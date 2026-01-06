@@ -1,7 +1,6 @@
 import { useDroppable } from "@dnd-kit/core";
 import type { Color, Move, PieceSymbol, Square } from "chess.js";
 import Piece from "./Piece";
-import { useEffect } from "react";
 
 interface SquareProps {
   cell: { square: Square; type: PieceSymbol; color: Color } | null;
@@ -23,10 +22,6 @@ const BoardSquare = (props: SquareProps) => {
   const { setNodeRef } = useDroppable({
     id: squareId,
   });
-
-  useEffect(() => {
-    console.log("valideMoves updated in Square:", valideMoves);
-  }, [valideMoves]);
 
   return (
     <div

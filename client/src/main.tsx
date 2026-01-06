@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
 
@@ -7,6 +7,8 @@ import "./index.css";
 import App from "./App.tsx";
 import Home from "./pages/Home.tsx";
 import Game from "./pages/Game.tsx";
+import Login from "./pages/Login.tsx";
+import AuthLayout from "./components/AuthLayout.tsx";
 
 const router = createBrowserRouter([
   {
@@ -19,16 +21,16 @@ const router = createBrowserRouter([
       },
       {
         path: "/game",
-        element: <Game />,
+        element: (
+          <AuthLayout authRequired>
+            <Game />
+          </AuthLayout>
+        ),
       },
-      // {
-      //   path: "/login",
-      //   element: (
-      //     <AuthLayout authRequired={false}>
-      //       <Login />
-      //     </AuthLayout>
-      //   ),
-      // },
+      {
+        path: "/login",
+        element: <Login />,
+      },
       // {
       //   path: "/signup",
       //   element: (
@@ -70,7 +72,5 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <RouterProvider router={router} />
-  </StrictMode>
+  <RouterProvider router={router} />
 );

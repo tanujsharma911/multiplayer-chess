@@ -1,13 +1,21 @@
 import type { Socket } from "socket.io";
 
-import { ERROR, INIT_GAME, INQUEUE, MOVE } from "./messages.js";
+import {
+  ERROR,
+  GAME_OVER,
+  INIT_GAME,
+  INQUEUE,
+  MOVE,
+  EXIT_GAME,
+  TIME_OUT,
+} from "./messages.js";
 import { Game } from "./Game.js";
-import { Chess } from "chess.js";
+import { User } from "./SocketManager.js";
 
 export class GameManager {
-  private games: Game[];
-  private users: Socket[];
-  private pendingUser: Socket | null;
+  private games: Game[]; // TODO: Use map 
+  private users: User[];
+  private pendingUser: User | null;
 
   constructor() {
     this.games = [];
@@ -15,70 +23,172 @@ export class GameManager {
     this.pendingUser = null;
   }
 
-  addUser(socket: Socket) {
-    this.users.push(socket);
-    this.addHandler(socket);
+  addUser(user: User) {
+    const existingUser = this.users.find((u) => u.userId === user.userId);
+
+    if (existingUser) {
+      try {
+        // detach previous handlers (if any) to avoid duplicates
+        existingUser.socket.off("message", () => {});
+      } catch (e) {}
+
+      existingUser.setSocket(user.socket);
+      console.log("🔄 User socket updated:", user.email);
+
+      this.addHandler(user);
+
+      return existingUser;
+    } else {
+      // Add new user
+      this.users.push(user);
+      console.log("➕ New user added:", user.email);
+
+      this.addHandler(user);
+
+      return user;
+    }
   }
 
-  removeUser(socket: Socket) {
-    this.users.filter((user) => user !== socket);
+  removeUser(user: User) {
+    this.users = this.users.filter((u) => u !== user);
 
-    if (this.pendingUser === socket) this.pendingUser = null;
+    console.log("🗑️ User removed:", user.email);
 
-    
+    if (this.pendingUser?.userId === user.userId) this.pendingUser = null;
 
-    //TODO: Stop the game because user left the game
-    //TODO: or can have reconnect logic
+    // Remove user from any active games
+    const game = this.games.find(
+      (g) =>
+        g.player1.userId === user.userId || g.player2.userId === user.userId
+    );
+    if (game) {
+      const opponent =
+        game.player1.userId === user.userId ? game.player2 : game.player1;
+
+      opponent.socket.emit("message", {
+        type: EXIT_GAME,
+        payload: {
+          winner: opponent.userId === game.player1.userId ? "b" : "w",
+        },
+      });
+
+      game.player1.inGame = false;
+      game.player2.inGame = false;
+
+      this.games = this.games.filter((g) => g !== game);
+
+      console.log("🛑 Game ended");
+    }
   }
 
-  addHandler(socket: Socket) {
-    socket.on("message", (msg) => {
+  addHandler(user: User) {
+    user.socket.on("message", (msg) => {
       const message = JSON.parse(JSON.stringify(msg));
 
-      console.log("🗣️ User message:", message);
-
       // --------------------------------- INIT_GAME ----------------------------------
+      // NOTE: For high concurrency use a proper lock or queue library.
+
       if (message.type === INIT_GAME) {
-        if (this.pendingUser) {
+        // If user is already in a game, reject
+        if (user.inGame) {
+          user.socket.emit("message", {
+            type: ERROR,
+            payload: { message: "Already in a game" },
+          });
+          return;
+        }
+
+        if (!this.pendingUser) {
+          // put user in pending
+          this.pendingUser = user;
+
+          console.log("⏳ User is in queue...");
+
+          user.socket.emit("message", { type: INQUEUE, payload: {} });
+        } else if (this.pendingUser.userId === user.userId) {
+          // If the pending user is the same as the current user
+          // user re-requested; just keep them in queue
+
+          user.socket.emit("message", { type: INQUEUE, payload: {} });
+        } else {
+          // If there's a pending user, start the game
           // Start the game
 
-          const game = new Game(this.pendingUser, socket);
+          const game = new Game(this.pendingUser, user);
           this.games.push(game);
 
           this.pendingUser = null;
 
-          console.log("🧩 Game started");
+          console.log("🧩 Game started", this.games.length);
 
-          game.player1.emit("message", {
+          game.player1.socket.emit("message", {
             type: INIT_GAME,
-            payload: { you: "b", turn: game.board.turn() },
+            payload: {
+              you: "b",
+              turn: game.board.turn(),
+              opponent: {
+                name: game.player2.name,
+                email: game.player2.email,
+                avatar: game.player2.avatar,
+                userId: game.player2.userId,
+              },
+            },
           });
-          game.player2.emit("message", {
+          game.player2.socket.emit("message", {
             type: INIT_GAME,
-            payload: { you: "w", turn: game.board.turn() },
+            payload: {
+              you: "w",
+              turn: game.board.turn(),
+              opponent: {
+                name: game.player1.name,
+                email: game.player1.email,
+                avatar: game.player1.avatar,
+                userId: game.player1.userId,
+              },
+            },
           });
-        } else {
-          // put user in pending
-          this.pendingUser = socket;
-
-          console.log("⏳ User is in queue...");
-
-          socket.emit("message", { type: INQUEUE, payload: {} });
         }
       }
       // --------------------------------- MOVE ----------------------------------
       else if (message.type === MOVE) {
         const game = this.games.find(
-          (board) => board.player1 === socket || board.player2 === socket
+          (board) =>
+            board.player1.userId === user.userId ||
+            board.player2.userId === user.userId
         );
 
         if (game) {
-          game.makeMove(game, socket, message.move);
+          if (game.makeMove(user, message.move) === GAME_OVER) {
+            // Remove the game from active games
+            this.games = this.games.filter((g) => g !== game);
+          }
         } else {
-          socket.emit("message", {
+          user.socket.emit("message", {
             type: ERROR,
             payload: { message: "no game found in which you are" },
           });
+        }
+      } else if (message.type === TIME_OUT) {
+        const game = this.games.find(
+          (board) =>
+            board.player1.userId === user.userId ||
+            board.player2.userId === user.userId
+        );
+
+        if (game) {
+          game.player1.socket.emit("message", {
+            type: GAME_OVER,
+            payload: { winner: message.payload.winner },
+          });
+          game.player2.socket.emit("message", {
+            type: GAME_OVER,
+            payload: { winner: message.payload.winner },
+          });
+
+          console.log("💀 Gameover due to timeout");
+
+          // Remove the game from active games
+          this.games = this.games.filter((g) => g !== game);
         }
       }
     });
