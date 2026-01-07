@@ -1,4 +1,3 @@
-
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
 
@@ -9,6 +8,7 @@ import Home from "./pages/Home.tsx";
 import Game from "./pages/Game.tsx";
 import Login from "./pages/Login.tsx";
 import AuthLayout from "./components/AuthLayout.tsx";
+import Account from "./pages/Account.tsx";
 
 const router = createBrowserRouter([
   {
@@ -47,14 +47,14 @@ const router = createBrowserRouter([
       //     </AuthLayout>
       //   ),
       // },
-      // {
-      //   path: "/account",
-      //   element: (
-      //     <AuthLayout authRequired>
-      //       <Account />
-      //     </AuthLayout>
-      //   ),
-      // },
+      {
+        path: "/account",
+        element: (
+          <AuthLayout authRequired>
+            <Account />
+          </AuthLayout>
+        ),
+      },
       // {
       //   path: "/watch",
       //   element: (

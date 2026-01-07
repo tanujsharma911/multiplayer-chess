@@ -8,12 +8,13 @@ import {
   MOVE,
   EXIT_GAME,
   TIME_OUT,
+  RESIGN,
 } from "./messages.js";
 import { Game } from "./Game.js";
 import { User } from "./SocketManager.js";
 
 export class GameManager {
-  private games: Game[]; // TODO: Use map 
+  private games: Game[]; // TODO: Use map
   private users: User[];
   private pendingUser: User | null;
 
@@ -62,22 +63,9 @@ export class GameManager {
         g.player1.userId === user.userId || g.player2.userId === user.userId
     );
     if (game) {
-      const opponent =
-        game.player1.userId === user.userId ? game.player2 : game.player1;
-
-      opponent.socket.emit("message", {
-        type: EXIT_GAME,
-        payload: {
-          winner: opponent.userId === game.player1.userId ? "b" : "w",
-        },
-      });
-
-      game.player1.inGame = false;
-      game.player2.inGame = false;
+      game.playerLeft(user);
 
       this.games = this.games.filter((g) => g !== game);
-
-      console.log("🛑 Game ended");
     }
   }
 
@@ -158,7 +146,10 @@ export class GameManager {
         );
 
         if (game) {
-          if (game.makeMove(user, message.move) === GAME_OVER) {
+          if (
+            game.makeMove(user, message.move) === GAME_OVER ||
+            game.makeMove(user, message.move) === TIME_OUT
+          ) {
             // Remove the game from active games
             this.games = this.games.filter((g) => g !== game);
           }
@@ -168,27 +159,23 @@ export class GameManager {
             payload: { message: "no game found in which you are" },
           });
         }
-      } else if (message.type === TIME_OUT) {
+      }
+      // --------------------------------- RESIGN ----------------------------------
+      else if (message.type === RESIGN) {
+        
         const game = this.games.find(
           (board) =>
             board.player1.userId === user.userId ||
             board.player2.userId === user.userId
         );
-
         if (game) {
-          game.player1.socket.emit("message", {
-            type: GAME_OVER,
-            payload: { winner: message.payload.winner },
-          });
-          game.player2.socket.emit("message", {
-            type: GAME_OVER,
-            payload: { winner: message.payload.winner },
-          });
-
-          console.log("💀 Gameover due to timeout");
-
-          // Remove the game from active games
+          game.playerResign(user);
           this.games = this.games.filter((g) => g !== game);
+        } else {
+          user.socket.emit("message", {
+            type: ERROR,
+            payload: { message: "no game found in which you are" },
+          });
         }
       }
     });

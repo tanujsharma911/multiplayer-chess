@@ -15,6 +15,7 @@ export const MOVE = "move";
 export const TIME_OUT = "time_out";
 export const EXIT_GAME = "exit_game";
 export const GAME_OVER = "game_over";
+export const RESIGN = "resign";
 
 
 function App() {

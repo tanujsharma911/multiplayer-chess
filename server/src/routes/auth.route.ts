@@ -12,6 +12,6 @@ const route: Router = Router();
 route.get("/google", googleLogin);
 route.get("/getuser", verifyJWT, getUserInfo);
 route.get("/refresh-token", refreshAccessToken);
-route.get("/logout", verifyJWT, userLogout);
+route.post("/logout", verifyJWT, userLogout);
 
 export default route;

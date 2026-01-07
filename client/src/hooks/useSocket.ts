@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import { GAME_OVER, INIT_GAME, INQUEUE, EXIT_GAME } from "../App";
+import { GAME_OVER, INIT_GAME, INQUEUE, EXIT_GAME, TIME_OUT } from "../App";
 import { useGame } from "../store/game";
 
-const gameOverSound = new Audio("/sounds/game-end.mp3");
+const gameSound = new Audio("/sounds/game-end.mp3");
 
 export const useSocket = (): Socket | null => {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -14,8 +14,6 @@ export const useSocket = (): Socket | null => {
       withCredentials: true,
     });
 
-    console.log("🔌 Connecting to socket server...");
-
     newSocket.on("connect", () => {
       setSocket(newSocket);
       console.log("🟢 Socket connected:", newSocket.id);
@@ -24,19 +22,18 @@ export const useSocket = (): Socket | null => {
     newSocket.on("message", (msg) => {
       if (msg?.type === INQUEUE) {
         setQueue();
-        console.log("⏳ In queue...");
-      }
-      if (msg?.type === INIT_GAME) {
+      } else if (msg?.type === INIT_GAME) {
+        gameSound.play();
         setGame({ ...msg.payload, isPending: false });
-        console.log("🧩 Game initialized", msg.payload);
-      }
-      if (msg?.type === GAME_OVER) {
-        gameOverSound.play();
-        setOver(msg.payload.winner);
-      }
-      if (msg?.type === EXIT_GAME) {
-        gameOverSound.play();
-        setOver(msg.payload.winner);
+      } else if (msg?.type === GAME_OVER) {
+        gameSound.play();
+        setOver({ reason: msg.payload.reason, result: msg.payload.result });
+      } else if (msg?.type === EXIT_GAME) {
+        gameSound.play();
+        setOver({ reason: msg.payload.reason, result: msg.payload.result });
+      } else if (msg?.type === TIME_OUT) {
+        gameSound.play();
+        setOver({ reason: msg.payload.reason, result: msg.payload.result });
       }
     });
 

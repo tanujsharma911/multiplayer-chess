@@ -20,7 +20,7 @@ app.use(cors({
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ["http://localhost:5173"],
+        origin: [process.env.CORS_ORIGIN || "*"],
         credentials: true,
     },
 });
@@ -29,18 +29,32 @@ app.use("/auth", authRoute);
 app.use("/health", healthRoute);
 const gameManager = new GameManager();
 io.use((socket, next) => {
-    const cookieHeader = socket.handshake.headers.cookie;
-    if (!cookieHeader) {
-        return next(new Error("Unauthorized"));
+    try {
+        const cookieHeader = socket.handshake.headers.cookie;
+        if (!cookieHeader) {
+            return next(new Error("Unauthorized: no cookies")); // TODO: What this passes
+        }
+        const cookies = cookie.parse(cookieHeader);
+        const accessToken = cookies.accessToken;
+        if (!accessToken) {
+            return next(new Error("Unauthorized: no access token"));
+        }
+        const user = extractAuthUser(accessToken);
+        socket.data.user = null;
+        if (user) {
+            socket.data.user = {
+                userId: user.userId,
+                email: user.email,
+                name: user.name,
+                avatar: user.avatar,
+            };
+        }
+        next();
     }
-    const cookies = cookie.parse(cookieHeader);
-    const accessToken = cookies.accessToken;
-    if (!accessToken) {
-        return next(new Error("Unauthorized"));
+    catch (error) {
+        console.error("❌ Socket authentication error:", error);
+        next(new Error("Unauthorized: invalid token"));
     }
-    const user = extractAuthUser(accessToken);
-    socket.data.user = user;
-    next();
 });
 io.on("connection", (socket) => {
     const userDetails = socket.data.user;
@@ -51,9 +65,9 @@ io.on("connection", (socket) => {
     }
     const user = new User(userDetails?.userId, userDetails?.email, userDetails?.name, userDetails?.avatar, socket);
     console.log("✅ User connected:", user.email);
-    gameManager.addUser(user);
+    const canonicalUser = gameManager.addUser(user);
     socket.on("disconnect", () => {
-        gameManager.removeUser(user);
+        gameManager.removeUser(canonicalUser);
     });
 });
 connectDB().then(() => {

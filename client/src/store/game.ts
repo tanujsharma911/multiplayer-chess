@@ -11,15 +11,16 @@ type game = {
     avatar?: string;
     userId?: string;
   };
-  winner?: "w" | "b" | undefined;
+  result?: "w" | "b" | "draw" | undefined;
+  reason?: string;
 };
 
 export const useGame = create<{
   game: game;
   setQueue: () => void;
-  setGame: (data: game) => void;
-  setOver: (winner?: "w" | "b") => void;
-  setTurn: (data: "w" | "b") => void;
+  setGame: (payload: game) => void;
+  setOver: (payload: { reason: string; result?: "w" | "b" | "draw" }) => void;
+  setTurn: (payload: "w" | "b") => void;
 }>((set) => ({
   game: {
     turn: null,
@@ -31,7 +32,8 @@ export const useGame = create<{
       avatar: "",
       userId: "",
     },
-    winner: undefined,
+    result: undefined,
+    reason: undefined,
   },
   setQueue: () =>
     set((state) => ({
@@ -40,23 +42,30 @@ export const useGame = create<{
         turn: null,
         you: null,
         opponent: { name: "", email: "", avatar: "", userId: "" },
-        winner: undefined,
+        result: undefined,
         status: INQUEUE,
       },
     })),
-  setGame: (data: game) =>
+  setGame: (payload: game) =>
     set((state) => ({
       ...state,
       game: {
         ...state.game,
-        turn: data.turn,
-        you: data.you,
+        turn: payload.turn,
+        you: payload.you,
         status: INIT_GAME,
-        opponent: data.opponent,
+        opponent: payload.opponent,
       },
     })),
   setTurn: (data: "w" | "b") =>
     set((state) => ({ game: { ...state.game, turn: data } })),
-  setOver: (winner?: "w" | "b") =>
-    set((state) => ({ game: { ...state.game, status: GAME_OVER, winner } })),
+  setOver: (payload: { reason?: string; result?: "w" | "b" | "draw" }) =>
+    set((state) => ({
+      game: {
+        ...state.game,
+        status: GAME_OVER,
+        result: payload.result,
+        reason: payload.reason,
+      },
+    })),
 }));

@@ -14,7 +14,7 @@ const Navbar = () => {
           Chess
         </Link>
         {user.isLoggedIn ? (
-          <div>{user?.name}</div>
+          <Link to={"/account"} className="hover:bg-gray-800 py-1 px-2 rounded-lg">{user?.name}</Link>
         ) : (
           <Button onClick={() => navigate("/login")}>Login</Button>
         )}

@@ -19,7 +19,6 @@ const Home = () => {
 
   return (
     <div className="h-full w-full">
-
       <div className="pt-20 flex flex-col items-center gap-4">
         <h1 className="text-5xl text-shadow-[0_0_20px_#446dbe3e] text-blue-200 font-bold motion-opacity-in-0 motion-blur-in-xs motion-translate-y-in-100 ">
           Play Chess

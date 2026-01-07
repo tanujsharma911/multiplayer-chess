@@ -2,16 +2,16 @@ import { Chess } from "chess.js";
 import Board from "../components/Board";
 import { useSocketStore } from "../store/socket";
 import { useEffect, useState } from "react";
-import { GAME_OVER, INIT_GAME, INQUEUE, MOVE, TIME_OUT } from "../App";
+import { GAME_OVER, INIT_GAME, INQUEUE, MOVE, RESIGN } from "../App";
 import { useGame } from "../store/game";
 import useUser from "@/store/user";
 import { Button } from "@/components/ui/button";
-// import {
-//   Tooltip,
-//   TooltipContent,
-//   TooltipTrigger,
-// } from "@/components/ui/tooltip";
-import { Clock } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Clock, Flag } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -43,7 +43,6 @@ interface MoveType {
 }
 
 const moveSound = new Audio("/sounds/move.wav");
-const gameOver = new Audio("/sounds/game-end.mp3");
 
 const Game = () => {
   const navigate = useNavigate();
@@ -68,9 +67,7 @@ const Game = () => {
       if (msg.type === MOVE) {
         const newChess = new Chess(msg.payload.board);
 
-        if (chess.isGameOver()) {
-          gameOver.play();
-        } else {
+        if (!chess.isGameOver()) {
           moveSound.play();
         }
 
@@ -102,19 +99,18 @@ const Game = () => {
       } else {
         setOpponentTimeLeft((prev) => prev - 100);
       }
-
-      if (yourTimeLeft <= 0 || opponentTimeLeft <= 0) {
-        setGameoverDialog(true);
-
-        socket?.emit("message", {
-          type: TIME_OUT,
-          payload: { winner: game.turn === "w" ? "b" : "w" },
-        });
-      }
     }, 100);
 
     return () => clearInterval(interval);
   }, [game]);
+
+  const handleResign = () => {
+    if (!socket) return;
+
+    socket.emit("message", {
+      type: RESIGN,
+    });
+  };
 
   return !user.isLoggedIn ? (
     <div className="flex items-center justify-center h-full py-20">
@@ -141,6 +137,7 @@ const Game = () => {
                   }
                   alt="opponent avatar"
                   className="w-10 h-10 rounded-full"
+                  referrerPolicy="no-referrer"
                 />
                 {game.opponent?.name || "Opponent"}
               </div>
@@ -163,6 +160,7 @@ const Game = () => {
                 }
                 alt="your avatar"
                 className="w-10 h-10 rounded-full"
+                referrerPolicy="no-referrer"
               />
               {user.name}
             </div>
@@ -179,19 +177,24 @@ const Game = () => {
 
         {/* Details */}
         <div className="bg-gray-800 min-w-sm p-5 rounded-xl overflow-scroll">
-          {/* <p>status: {game.status}</p>
           <div className="grid grid-cols-2 mb-4 gap-4">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" className="py-6">
-                  <Flag />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Resign</p>
-              </TooltipContent>
-            </Tooltip>
-          </div> */}
+            {game.status === INIT_GAME && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    onClick={handleResign}
+                    className="py-6"
+                  >
+                    <Flag />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Resign</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
           <div className="grid grid-cols-2">
             {moves.map((move, index) => (
               <div
@@ -215,28 +218,19 @@ const Game = () => {
       >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>
-              {game.winner === game.you ? "You won!" : "You lost!"}
+            <DialogTitle className="text-center flex flex-col gap-4 items-center justify-center">
+              <p className="text-2xl font-bold">
+                {game.result === "b"
+                  ? "Black Won"
+                  : game.result === "w"
+                  ? "White Won"
+                  : "Draw"}
+              </p>
+              <p className="text-lg font-medium">
+                {game.reason || "No reason provided"}
+              </p>
             </DialogTitle>
-            <DialogDescription>
-              {game.winner !== game.you ? (
-                <img
-                  src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Animals/Donkey.png"
-                  alt="Donkey"
-                  width="250"
-                  height="250"
-                  className="mx-auto"
-                />
-              ) : (
-                <img
-                  src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Smiling%20Face%20with%20Sunglasses.png"
-                  alt="Smiling Face with Sunglasses"
-                  width="250"
-                  height="250"
-                  className="mx-auto"
-                />
-              )}
-            </DialogDescription>
+            <DialogDescription></DialogDescription>
           </DialogHeader>
           <div className="grid gap-4"></div>
           <DialogFooter>
