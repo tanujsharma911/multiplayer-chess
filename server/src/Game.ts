@@ -21,13 +21,15 @@ export class Game {
   public player1: User;
   public player2: User;
   public board: Chess;
-  private startTime;
-  private lastPlayedAt: Date | null = null;
-  private clocks = {
+  public startTime: Date;
+  public lastPlayedAt: Date | null = null;
+  public clocks = {
     w: 10 * 60 * 1000, // 1 minutes in ms
     b: 10 * 60 * 1000,
   };
-  private moveTimeout: NodeJS.Timeout | null = null;
+  public moveTimeout: NodeJS.Timeout | null = null;
+  public isSaved: boolean = false;
+  public chats: { message: string; time: Date; from: string }[] = [];
 
   constructor(p1: User, p2: User) {
     this.player1 = p1;
@@ -241,6 +243,12 @@ export class Game {
     const game = this;
 
     console.log("💬 Chat message", { from: user.email, message });
+
+    this.chats.push({
+      message,
+      time: new Date(),
+      from: user.userId === game.player1.userId ? "b" : "w",
+    });
 
     // Broadcast the chat message to both players
     game.player1.socket.emit("message", {

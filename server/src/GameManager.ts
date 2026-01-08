@@ -13,6 +13,7 @@ import {
 } from "./messages.js";
 import { Game } from "./Game.js";
 import { User } from "./SocketManager.js";
+import { saveFinishedGame } from "./repositories/game.repository.js";
 
 export class GameManager {
   private games: Game[]; // TODO: Use map
@@ -151,6 +152,9 @@ export class GameManager {
           if (gameStatus === GAME_OVER || gameStatus === TIME_OUT) {
             // Remove the game from active games
             this.games = this.games.filter((g) => g !== game);
+
+            // Save the finished game
+            this.saveGame(game);
           }
         } else {
           user.socket.emit("message", {
@@ -169,6 +173,9 @@ export class GameManager {
         if (game) {
           game.playerResign(user);
           this.games = this.games.filter((g) => g !== game);
+
+          // Save
+          this.saveGame(game);
         } else {
           user.socket.emit("message", {
             type: ERROR,
@@ -193,5 +200,24 @@ export class GameManager {
         }
       }
     });
+  }
+
+  saveGame(game: Game) {
+    if (!game.isSaved) {
+      game.isSaved = true;
+
+      console.log("💾 Saving finished game...");
+
+      return saveFinishedGame({
+        player1: game.player1,
+        player2: game.player2,
+        result: game.board.isGameOver() ? game.board.turn() : null,
+        reason: game.board.isGameOver() ? "checkmate" : "draw",
+        startedAt: game.startTime,
+        endedAt: new Date(),
+        moves: game.board.history({ verbose: true }),
+        chats: game.chats,
+      });
+    }
   }
 }
