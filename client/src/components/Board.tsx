@@ -73,7 +73,10 @@ const Board = (props: BoardProps) => {
   }, [game]);
 
   return (
-    <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
+    <DndContext
+      onDragEnd={handleDragEnd}
+      onDragStart={handleDragStart}
+    >
       <div className={blackBottom ? "rotate-180" : ""}>
         {chess &&
           chess.board().map((row, r) => {

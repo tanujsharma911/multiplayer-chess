@@ -9,6 +9,7 @@ import {
   EXIT_GAME,
   TIME_OUT,
   RESIGN,
+  CHAT,
 } from "./messages.js";
 import { Game } from "./Game.js";
 import { User } from "./SocketManager.js";
@@ -146,10 +147,8 @@ export class GameManager {
         );
 
         if (game) {
-          if (
-            game.makeMove(user, message.move) === GAME_OVER ||
-            game.makeMove(user, message.move) === TIME_OUT
-          ) {
+          const gameStatus = game.makeMove(user, message.move);
+          if (gameStatus === GAME_OVER || gameStatus === TIME_OUT) {
             // Remove the game from active games
             this.games = this.games.filter((g) => g !== game);
           }
@@ -162,7 +161,6 @@ export class GameManager {
       }
       // --------------------------------- RESIGN ----------------------------------
       else if (message.type === RESIGN) {
-        
         const game = this.games.find(
           (board) =>
             board.player1.userId === user.userId ||
@@ -171,6 +169,22 @@ export class GameManager {
         if (game) {
           game.playerResign(user);
           this.games = this.games.filter((g) => g !== game);
+        } else {
+          user.socket.emit("message", {
+            type: ERROR,
+            payload: { message: "no game found in which you are" },
+          });
+        }
+      }
+      // --------------------------------- CHAT ----------------------------------
+      else if (message.type === CHAT) {
+        const game = this.games.find(
+          (board) =>
+            board.player1.userId === user.userId ||
+            board.player2.userId === user.userId
+        );
+        if (game) {
+          game.chat(user, message.payload);
         } else {
           user.socket.emit("message", {
             type: ERROR,

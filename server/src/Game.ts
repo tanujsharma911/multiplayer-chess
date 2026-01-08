@@ -1,7 +1,15 @@
 import type { Socket } from "socket.io";
 import { Chess } from "chess.js";
-import { ERROR, GAME_OVER, MOVE, EXIT_GAME, TIME_OUT } from "./messages.js";
+import {
+  ERROR,
+  GAME_OVER,
+  MOVE,
+  EXIT_GAME,
+  TIME_OUT,
+  CHAT,
+} from "./messages.js";
 import type { User } from "./SocketManager.js";
+import { time } from "console";
 
 /*
 NOTE: Player 1 is Black, Player 2 is White
@@ -42,7 +50,6 @@ export class Game {
     // Check if it's the player's turn
     if (playerColor !== this.board.turn()) {
       // Not your turn
-      console.log("⚠️ Not your turn", player.email, move);
 
       player.socket.emit("message", {
         type: ERROR,
@@ -228,5 +235,29 @@ export class Game {
     this.player2.inGame = false;
 
     console.log("🚪 Gameover due to player leaving", user.email);
+  }
+
+  chat(user: User, message: string) {
+    const game = this;
+
+    console.log("💬 Chat message", { from: user.email, message });
+
+    // Broadcast the chat message to both players
+    game.player1.socket.emit("message", {
+      type: CHAT,
+      payload: {
+        from: user.userId === game.player1.userId ? "b" : "w",
+        message,
+        time: new Date(),
+      },
+    });
+    game.player2.socket.emit("message", {
+      type: CHAT,
+      payload: {
+        from: user.userId === game.player1.userId ? "b" : "w",
+        message,
+        time: new Date(),
+      },
+    });
   }
 }

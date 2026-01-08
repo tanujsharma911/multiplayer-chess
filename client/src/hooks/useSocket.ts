@@ -1,13 +1,20 @@
 import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import { GAME_OVER, INIT_GAME, INQUEUE, EXIT_GAME, TIME_OUT } from "../App";
+import {
+  GAME_OVER,
+  INIT_GAME,
+  INQUEUE,
+  EXIT_GAME,
+  TIME_OUT,
+  CHAT,
+} from "../App";
 import { useGame } from "../store/game";
 
 const gameSound = new Audio("/sounds/game-end.mp3");
 
 export const useSocket = (): Socket | null => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const { setQueue, setGame, setOver } = useGame();
+  const { setQueue, setGame, setOver, setChat } = useGame();
 
   useEffect(() => {
     const newSocket = io(import.meta.env.VITE_SERVER_URL, {
@@ -34,6 +41,12 @@ export const useSocket = (): Socket | null => {
       } else if (msg?.type === TIME_OUT) {
         gameSound.play();
         setOver({ reason: msg.payload.reason, result: msg.payload.result });
+      } else if (msg?.type === CHAT) {
+        setChat({
+          from: msg.payload.from,
+          message: msg.payload.message,
+          time: msg.payload.time,
+        });
       }
     });
 

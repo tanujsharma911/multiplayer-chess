@@ -8,6 +8,8 @@ import Navbar from "./components/Navbar";
 import useUser from "./store/user";
 import useApiPrivate from "./hooks/useAxiosPrivate";
 
+// import Stockfish from "./engine/stockfish.worker.js";
+
 export const ERROR = "error";
 export const INQUEUE = "inqueue";
 export const INIT_GAME = "init_game";
@@ -16,7 +18,7 @@ export const TIME_OUT = "time_out";
 export const EXIT_GAME = "exit_game";
 export const GAME_OVER = "game_over";
 export const RESIGN = "resign";
-
+export const CHAT = "chat";
 
 function App() {
   const socket = useSocket();
@@ -61,14 +63,14 @@ function App() {
 
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-      <div className="bg-gray-900 min-h-screen text-white">
-        <div className="h-full min-h-[calc(100vh-4rem)] pt-13 w-full relative z-10">
+      <div className="bg-gray-900 lg:h-screen grid grid-rows-[auto_1fr_auto] lg:overflow-hidden text-white">
+        <Navbar />
+
+        <div className="relative grid grid-rows-1 grid-cols-1 overflow-hidden">
           <Outlet />
         </div>
 
-        <Navbar />
-
-        <div className="p-2 text-center border- text-xs text-gray-500">
+        <div className="text-center border- text-xs text-gray-500">
           Made by{" "}
           <a href="https://github.com/tanujsharma911" className="underline">
             Tanuj Sharma

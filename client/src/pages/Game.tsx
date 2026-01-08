@@ -21,6 +21,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router";
+import Moves from "@/components/Moves";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ChatsPanel from "@/components/ChatsPanel";
 
 type messageType = {
   type: string;
@@ -31,7 +34,7 @@ type messageType = {
   };
 };
 
-interface MoveType {
+export interface MoveType {
   after?: string;
   before?: string;
   color?: string;
@@ -117,8 +120,8 @@ const Game = () => {
       Please log in to play
     </div>
   ) : (
-    <div className="h-full mt-4">
-      <div className="mx-auto max-w-5xl gap-5 grid grid-cols-1 lg:grid-cols-[auto_1fr]">
+    <div className="grid grid-cols-1 grid-rows-1 mt-10">
+      <div className="mx-auto max-w-5xl gap-5 grid grid-cols-1 lg:grid-cols-[auto_1fr] grid-rows-1">
         {/* Board */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center mb-2 justify-between">
@@ -176,7 +179,7 @@ const Game = () => {
         </div>
 
         {/* Details */}
-        <div className="bg-gray-800 min-w-sm p-5 rounded-xl overflow-scroll">
+        <div className="bg-gray-800 min-w-sm h-full p-5 rounded-xl grid-rows-[auto_1fr]">
           <div className="grid grid-cols-2 mb-4 gap-4">
             {game.status === INIT_GAME && (
               <Tooltip>
@@ -195,19 +198,22 @@ const Game = () => {
               </Tooltip>
             )}
           </div>
-          <div className="grid grid-cols-2">
-            {moves.map((move, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-6 py-1 px-2 rounded"
-              >
-                <div className="text-gray-500">
-                  {index % 2 === 0 && index / 2 + 1 + "."}
-                </div>
-                <div>{move.san}</div>
-              </div>
-            ))}
-          </div>
+
+          <Tabs defaultValue="chat">
+            <TabsList>
+              <TabsTrigger value="chat">Chat</TabsTrigger>
+              <TabsTrigger value="moves">Moves</TabsTrigger>
+            </TabsList>
+            <TabsContent
+              value="chat"
+              className="overflow-y-auto h-[60vh]"
+            >
+              <ChatsPanel />
+            </TabsContent>
+            <TabsContent value="moves" className="overflow-y-auto h-[60vh]">
+              <Moves moves={moves} />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 
