@@ -50,7 +50,7 @@ const googleLogin = async (req, res) => {
         const cookiesOptions = {
             httpOnly: true,
             secure: isProd,
-            sameSite: "strict",
+            sameSite: 'none',
         };
         res
             .cookie("accessToken", accessToken, cookiesOptions)
@@ -160,7 +160,7 @@ const refreshAccessToken = async (req, res) => {
         const cookiesOptions = {
             httpOnly: true,
             secure: isProd,
-            sameSite: "strict",
+            sameSite: 'none',
         };
         res
             .cookie("accessToken", tokens.accessToken, cookiesOptions)
