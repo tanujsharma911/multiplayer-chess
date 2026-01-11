@@ -1,6 +1,13 @@
+import { cn } from "@/lib/utils";
 import type { MoveType } from "@/pages/Game";
 
-const Moves = ({ moves }: { moves: MoveType[] }) => {
+const Moves = ({
+  moves,
+  currentMove,
+}: {
+  moves: MoveType[];
+  currentMove?: number | null;
+}) => {
   return (
     <div className="grid grid-cols-2 place-content-start overflow-scroll">
       {moves.map((move, index) => (
@@ -8,7 +15,14 @@ const Moves = ({ moves }: { moves: MoveType[] }) => {
           <div className="text-gray-500">
             {index % 2 === 0 && index / 2 + 1 + "."}
           </div>
-          <div>{move.san}</div>
+          <div
+            className={cn(
+              "py-1 px-2 rounded-md",
+              index === currentMove ? "bg-black/20" : ""
+            )}
+          >
+            {move.san}
+          </div>
         </div>
       ))}
 

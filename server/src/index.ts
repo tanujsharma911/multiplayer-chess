@@ -11,6 +11,7 @@ dotenv.config();
 import { GameManager } from "./GameManager.js";
 
 import authRoute from "./routes/auth.route.js";
+import gameRoute from "./routes/game.route.js";
 import healthRoute from "./routes/health.route.js";
 import { connectDB } from "./db/index.js";
 import { extractAuthUser } from "./utils/extractAuthUser.js";
@@ -38,6 +39,7 @@ app.use(cookieParser());
 
 app.use("/auth", authRoute);
 app.use("/health", healthRoute);
+app.use("/game", gameRoute);
 
 const gameManager = new GameManager();
 
@@ -92,8 +94,6 @@ io.on("connection", (socket) => {
     userDetails?.avatar,
     socket
   );
-
-  console.log("✅ User connected:", user.email);
 
   const canonicalUser = gameManager.addUser(user); 
 

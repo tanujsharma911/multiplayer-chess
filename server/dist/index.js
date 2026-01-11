@@ -8,6 +8,7 @@ import cookie from "cookie";
 dotenv.config();
 import { GameManager } from "./GameManager.js";
 import authRoute from "./routes/auth.route.js";
+import gameRoute from "./routes/game.route.js";
 import healthRoute from "./routes/health.route.js";
 import { connectDB } from "./db/index.js";
 import { extractAuthUser } from "./utils/extractAuthUser.js";
@@ -27,6 +28,7 @@ const io = new Server(server, {
 app.use(cookieParser());
 app.use("/auth", authRoute);
 app.use("/health", healthRoute);
+app.use("/game", gameRoute);
 const gameManager = new GameManager();
 io.use((socket, next) => {
     try {
@@ -64,7 +66,6 @@ io.on("connection", (socket) => {
         return;
     }
     const user = new User(userDetails?.userId, userDetails?.email, userDetails?.name, userDetails?.avatar, socket);
-    console.log("✅ User connected:", user.email);
     const canonicalUser = gameManager.addUser(user);
     socket.on("disconnect", () => {
         gameManager.removeUser(canonicalUser);

@@ -9,6 +9,7 @@ import Game from "./pages/Game.tsx";
 import Login from "./pages/Login.tsx";
 import AuthLayout from "./components/AuthLayout.tsx";
 import Account from "./pages/Account.tsx";
+import Analyse from "./pages/Analyse.tsx";
 
 const router = createBrowserRouter([
   {
@@ -55,14 +56,14 @@ const router = createBrowserRouter([
           </AuthLayout>
         ),
       },
-      // {
-      //   path: "/watch",
-      //   element: (
-      //     <AuthLayout>
-      //       <Video />
-      //     </AuthLayout>
-      //   ),
-      // },
+      {
+        path: "/analyse/:gameId",
+        element: (
+          <AuthLayout authRequired>
+            <Analyse />
+          </AuthLayout>
+        ),
+      },
       // {
       //   path: "/not-found",
       //   element: <NotFound />,

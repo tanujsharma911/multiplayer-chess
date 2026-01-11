@@ -1,0 +1,10 @@
+export declare const ERROR = "error";
+export declare const INQUEUE = "inqueue";
+export declare const INIT_GAME = "init_game";
+export declare const MOVE = "move";
+export declare const TIME_OUT = "time_out";
+export declare const EXIT_GAME = "exit_game";
+export declare const GAME_OVER = "game_over";
+export declare const RESIGN = "resign";
+export declare const CHAT = "chat";
+//# sourceMappingURL=messages.d.ts.map

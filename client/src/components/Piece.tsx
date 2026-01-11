@@ -15,7 +15,8 @@ const Piece = (props: PieceProps) => {
   return (
     <DraggablePiece blackBottom={blackBottom} id={squareId} {...rest}>
       <img
-        src={`pieces/${type}.png`}
+        src={`/pieces/${type}.png`}
+        alt={type}
         className={`bg-transparent ${blackBottom ? "rotate-180" : ""}`}
         style={{
           touchAction: "none", // prevent zooming and scrolling on touch devices

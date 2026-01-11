@@ -55,7 +55,7 @@ const googleLogin = async (req: Request, res: Response) => {
         status: "error",
         message: "Internal Server Error :: Can't register user",
       });
-    } 
+    }
 
     const { accessToken, refreshToken } = generateAccessAndRefreshTokens(
       user as unknown as UserModel
@@ -93,7 +93,15 @@ const googleLogin = async (req: Request, res: Response) => {
 
 const getUserInfo = async (req: Request, res: Response) => {
   try {
-    const userEmail = (req.user as any).email;
+    const userEmail = req?.user?.email;
+
+    if (!userEmail) {
+      return res.status(400).json({
+        code: 400,
+        status: "error",
+        message: "Bad Request :: Missing user email",
+      });
+    }
 
     const user = await User.findOne({ email: userEmail });
 

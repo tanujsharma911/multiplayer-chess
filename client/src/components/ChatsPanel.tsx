@@ -21,7 +21,7 @@ const ChatsPanel = () => {
   };
   return (
     <div className="h-[60vh] grid grid-rows-[1fr_auto] gap-4">
-      <div className="h-full rounded-lg bg-gray-900/50  overflow-scroll">
+      <div className="h-full rounded-lg bg-gray-900/50 overflow-scroll">
         <ChatHistory />
       </div>
 

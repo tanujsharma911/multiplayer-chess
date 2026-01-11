@@ -1,4 +1,4 @@
-import type { Socket } from "socket.io";
+import { saveFinishedGame } from "./repositories/game.repository.js";
 import { Chess } from "chess.js";
 import {
   ERROR,
@@ -101,6 +101,8 @@ export class Game {
     if (this.clocks[playerColor] < 0) {
       this.endGameByTimeout(playerColor === "w" ? "b" : "w");
 
+      this.saveGame(playerColor === "w" ? "b" : "w", "timeout");
+
       return TIME_OUT;
     }
 
@@ -150,6 +152,8 @@ export class Game {
       // mark players not in game
       this.player1.inGame = false;
       this.player2.inGame = false;
+
+      this.saveGame(result, isCheckmate ? "checkmate" : "draw");
 
       return GAME_OVER;
     }
@@ -237,6 +241,8 @@ export class Game {
     this.player2.inGame = false;
 
     console.log("🚪 Gameover due to player leaving", user.email);
+
+    this.saveGame(playerColor === "w" ? "b" : "w", "resign");
   }
 
   chat(user: User, message: string) {
@@ -267,5 +273,24 @@ export class Game {
         time: new Date(),
       },
     });
+  }
+
+  saveGame(result: "w" | "b" | "draw", reason: string) {
+    if (!this.isSaved) {
+      this.isSaved = true;
+
+      console.log("💾 Saving finished game...");
+
+      return saveFinishedGame({
+        player1: this.player1,
+        player2: this.player2,
+        result: result,
+        reason: reason,
+        startedAt: this.startTime,
+        endedAt: new Date(),
+        moves: this.board.history({ verbose: true }),
+        chats: this.chats,
+      });
+    }
   }
 }

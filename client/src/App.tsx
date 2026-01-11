@@ -63,7 +63,7 @@ function App() {
 
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-      <div className="bg-gray-900 lg:h-screen grid grid-rows-[auto_1fr_auto] lg:overflow-hidden text-white">
+      <div className="bg-gray-900 min-h-screen grid grid-rows-[auto_1fr_auto] lg:overflow-hidden text-white">
         <Navbar />
 
         <div className="relative grid grid-rows-1 grid-cols-1 overflow-hidden">

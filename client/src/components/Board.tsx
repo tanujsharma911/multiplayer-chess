@@ -1,4 +1,4 @@
-import type { Chess, Move, Square } from "chess.js";
+import { Chess, type Move, type Square } from "chess.js";
 import type { Socket } from "socket.io-client";
 import {
   DndContext,
@@ -15,17 +15,22 @@ interface BoardProps {
   chess?: Chess;
   boardVerision?: number;
   socket?: Socket | null;
+  isAnalysis?: boolean;
+  position?: string | null;
 }
 
 const Board = (props: BoardProps) => {
-  const { chess, socket } = props;
+  const { chess: chessInstance, socket, isAnalysis, position } = props;
 
   const { game } = useGame();
+  const chess = chessInstance || new Chess(position || undefined);
 
   const [blackBottom, setblackBottom] = useState(false);
   const [valideMoves, setValideMoves] = useState<Move[]>([]);
 
   const sendMove = (from: string, to: string) => {
+    if (isAnalysis) return;
+
     socket?.emit("message", {
       type: MOVE,
       move: { from: from, to: to },
@@ -33,6 +38,8 @@ const Board = (props: BoardProps) => {
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
+    if (isAnalysis) return;
+
     if (!event.over || !chess || !socket) return;
 
     const from = event.active.id as Square;
@@ -51,6 +58,8 @@ const Board = (props: BoardProps) => {
   };
 
   const handleDragStart = (event: DragStartEvent) => {
+    if (isAnalysis) return;
+
     if (!chess || !socket) return;
 
     const from = event.active.id as Square;
@@ -73,10 +82,7 @@ const Board = (props: BoardProps) => {
   }, [game]);
 
   return (
-    <DndContext
-      onDragEnd={handleDragEnd}
-      onDragStart={handleDragStart}
-    >
+    <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
       <div className={blackBottom ? "rotate-180" : ""}>
         {chess &&
           chess.board().map((row, r) => {

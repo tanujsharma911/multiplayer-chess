@@ -28,7 +28,7 @@ export const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
       });
     }
 
-    req.user = decoded;
+    req.user = decoded as { userId: string; email: string };
 
     next();
   } catch (error) {
