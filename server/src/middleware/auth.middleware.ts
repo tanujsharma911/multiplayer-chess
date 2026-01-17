@@ -10,7 +10,7 @@ export const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
     const accessToken = req.cookies?.accessToken;
 
     if (!accessToken) {
-      return res.status(403).json({
+      return res.status(401).json({
         status: "error",
         message: "Forbidden :: Missing access token",
       });
@@ -22,9 +22,9 @@ export const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
     );
 
     if (!decoded) {
-      return res.status(403).json({
+      return res.status(401).json({
         status: "error",
-        message: "Forbidden :: Invalid access token can't decode it",
+        message: "Unauthorized :: Invalid access token can't decode it",
       });
     }
 

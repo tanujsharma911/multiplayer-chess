@@ -1,24 +1,22 @@
-import useUser from "@/store/user";
-import { api } from "../api/api";
+import useUser from '@/store/user';
+import axios from 'axios';
 
 const useRefreshToken = () => {
   const { loginUser } = useUser();
   const refreshToken = async () => {
     try {
-      const response = await api
-        .get("/auth/refresh-token", {
-          withCredentials: true,
-        })
-        .then((res) => res.data);
+      const response = await axios.get('/auth/refresh-token', {
+        withCredentials: true,
+      });
 
-      console.log("Refresh Token Response:", response);
+      if (response?.data?.user) {
+        loginUser(response.data.user);
+      }
 
-      loginUser(response.user);
-
-      return response.user;
+      return response.data.user;
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_) {
-      console.log("👉 Failed to refresh token -> because of first visit");
+      /* empty */
     }
   };
   return refreshToken;

@@ -7,4 +7,5 @@ export declare const EXIT_GAME = "exit_game";
 export declare const GAME_OVER = "game_over";
 export declare const RESIGN = "resign";
 export declare const CHAT = "chat";
+export declare const PLAYER_LEFT = "player_left";
 //# sourceMappingURL=messages.d.ts.map

@@ -1,43 +1,41 @@
-import { ChessKnight } from "lucide-react";
-import { useNavigate } from "react-router";
-import { useSocketStore } from "../store/socket";
-import CustomButton from "@/components/ui/customButton";
-import useUser from "@/store/user";
+import { useNavigate } from 'react-router';
+import { useSocketStore } from '../store/socket';
+import useUser from '@/store/user';
+import { Button } from '@/components/ui/button';
+import { ChessKnight } from 'lucide-react';
+import Board from '@/components/Board';
+import { Chess } from 'chess.js';
 
 const Home = () => {
   const navigate = useNavigate();
   const { socket } = useSocketStore();
   const { user } = useUser();
 
+  const chess = new Chess();
+
   const handleOnClick = () => {
-    if (!socket) {
-      console.log("No socket found");
-      return;
-    }
-    navigate("/game");
+    navigate('/login');
   };
 
   return (
     <div className="h-full w-full">
-      <div className="pt-20 flex flex-col items-center gap-4">
-        <h1 className="text-5xl text-shadow-[0_0_20px_#446dbe3e] text-blue-200 font-bold motion-opacity-in-0 motion-blur-in-xs motion-translate-y-in-100 ">
-          Play Chess
-        </h1>
-        <h1 className="text-6xl text-shadow-[0_0_20px_#446dbe7d] text-blue-100 font-bold mb-5 motion-opacity-in-0 motion-blur-in-xs motion-translate-y-in-50 motion-delay-100">
-          On #1 Online Platform
-        </h1>
-        <div className="flex justify-between gap-4">
-          <CustomButton
-            handleOnClick={handleOnClick}
-            disabled={!user.isLoggedIn}
-          >
-            <ChessKnight />
-            Play Now
-          </CustomButton>
+      <div className="flex flex-col lg:flex-row p-10 h-full w-full">
+        <div className="w-120 aspect-square">
+          <Board chess={chess} />
+        </div>
+        <div className="w-full p-6">
+          <h1 className="text-5xl font-bold">
+            Play Chess on the <br /> #2 Chess Platform!
+          </h1>
           {!user.isLoggedIn && (
-            <p className="text-gray-400 mt-2 motion-opacity-in-0 motion-blur-in-xs motion-translate-y-in-50 motion-delay-200">
-              Please login to play
-            </p>
+            <Button
+              onClick={handleOnClick}
+              size={'xl'}
+              className="mt-4 font-bold text-lg"
+            >
+              <ChessKnight className="size-6!" />
+              Play
+            </Button>
           )}
         </div>
       </div>

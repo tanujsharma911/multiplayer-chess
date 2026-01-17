@@ -1,4 +1,4 @@
-import { User } from "./SocketManager.js";
+import { User } from './SocketManager.js';
 export declare class GameManager {
     private games;
     private users;

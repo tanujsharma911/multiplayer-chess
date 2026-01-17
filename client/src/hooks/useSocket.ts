@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { io, Socket } from "socket.io-client";
+import { useEffect, useState } from 'react';
+import { io, Socket } from 'socket.io-client';
 import {
   GAME_OVER,
   INIT_GAME,
@@ -7,10 +7,10 @@ import {
   EXIT_GAME,
   TIME_OUT,
   CHAT,
-} from "../App";
-import { useGame } from "../store/game";
+} from '../App';
+import { useGame } from '../store/game';
 
-const gameSound = new Audio("/sounds/game-end.mp3");
+const gameSound = new Audio('/sounds/game-end.mp3');
 
 export const useSocket = (): Socket | null => {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -21,12 +21,11 @@ export const useSocket = (): Socket | null => {
       withCredentials: true,
     });
 
-    newSocket.on("connect", () => {
+    newSocket.on('connect', () => {
       setSocket(newSocket);
-      console.log("🟢 Socket connected:", newSocket.id);
     });
 
-    newSocket.on("message", (msg) => {
+    newSocket.on('message', (msg) => {
       if (msg?.type === INQUEUE) {
         setQueue();
       } else if (msg?.type === INIT_GAME) {
@@ -50,10 +49,8 @@ export const useSocket = (): Socket | null => {
       }
     });
 
-    newSocket.on("disconnect", () => {
+    newSocket.on('disconnect', () => {
       setSocket(null);
-
-      console.log("🔴 Socket disconnected:", newSocket.id);
     });
 
     return () => {

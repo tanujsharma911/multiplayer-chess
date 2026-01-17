@@ -1,7 +1,7 @@
-import useUser from "@/store/user";
-import { api } from "../api/api";
-import useRefreshToken from "./useRefreshToken";
-import { useEffect } from "react";
+import useUser from '@/store/user';
+import { api } from '../api/api';
+import useRefreshToken from './useRefreshToken';
+import { useEffect } from 'react';
 
 const useApiPrivate = () => {
   const { user } = useUser();
@@ -12,7 +12,7 @@ const useApiPrivate = () => {
       (config) => {
         // Don't set Content-Type for FormData, let browser handle it
         if (config.data instanceof FormData) {
-          delete config.headers["Content-Type"];
+          delete config.headers['Content-Type'];
         }
 
         return config;
@@ -27,18 +27,12 @@ const useApiPrivate = () => {
 
         if (error?.response?.status === 401 && !prevRequest?.sent) {
           // Unauthorized on first try, try refreshing token
-          console.log(
-            "👉 First response :: unauthorized error -> trying to refresh token"
-          );
 
           prevRequest.sent = true;
 
           const newUserData = await refreshToken();
 
           if (newUserData) {
-            console.log(
-              "👉 Second response :: Token refreshed -> retrying original request"
-            );
             // Retry original request with new token
             return api(prevRequest);
           }

@@ -1,17 +1,24 @@
-import { Chess } from "chess.js";
-import Board from "../components/Board";
-import { useSocketStore } from "../store/socket";
-import { useEffect, useState } from "react";
-import { GAME_OVER, INIT_GAME, INQUEUE, MOVE, RESIGN } from "../App";
-import { useGame } from "../store/game";
-import useUser from "@/store/user";
-import { Button } from "@/components/ui/button";
+import { Chess, type Square } from 'chess.js';
+import Board from '../components/Board';
+import { useSocketStore } from '../store/socket';
+import { useEffect, useState } from 'react';
+import {
+  GAME_OVER,
+  INIT_GAME,
+  INQUEUE,
+  MOVE,
+  PLAYER_LEFT,
+  RESIGN,
+} from '../App';
+import { useGame } from '../store/game';
+import useUser from '@/store/user';
+import { Button } from '@/components/ui/button';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Clock, Flag } from "lucide-react";
+} from '@/components/ui/tooltip';
+import { Clock, Flag } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -19,17 +26,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { useNavigate } from "react-router";
-import Moves from "@/components/Moves";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ChatsPanel from "@/components/ChatsPanel";
+} from '@/components/ui/dialog';
+import { useNavigate } from 'react-router';
+import Moves from '@/components/Moves';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ChatsPanel from '@/components/ChatsPanel';
 
 type messageType = {
   type: string;
   payload: {
     board: string;
-    turn: "w" | "b";
+    turn: 'w' | 'b';
     move: MoveType;
   };
 };
@@ -45,7 +52,7 @@ export interface MoveType {
   piece?: string;
 }
 
-const moveSound = new Audio("/sounds/move.wav");
+const moveSound = new Audio('/sounds/move.wav');
 
 const Game = () => {
   const navigate = useNavigate();
@@ -55,7 +62,6 @@ const Game = () => {
 
   const [chess, setChess] = useState(new Chess());
   const [moves, setMoves] = useState<MoveType[]>([]);
-  const [boardVerision, setBoardVerision] = useState(0);
   const [yourTimeLeft, setYourTimeLeft] = useState(10 * 60 * 1000);
   const [opponentTimeLeft, setOpponentTimeLeft] = useState(10 * 60 * 1000);
   const [gameoverDialog, setGameoverDialog] = useState(true);
@@ -64,7 +70,7 @@ const Game = () => {
     if (!socket) {
       return;
     }
-    socket.emit("message", { type: INIT_GAME });
+    socket.emit('message', { type: INIT_GAME });
 
     const handler = (msg: messageType) => {
       if (msg.type === MOVE) {
@@ -74,8 +80,6 @@ const Game = () => {
           moveSound.play();
         }
 
-        setBoardVerision((v) => v + 1);
-
         setMoves((prev) => [...prev, msg.payload.move]);
 
         setChess(newChess);
@@ -84,7 +88,7 @@ const Game = () => {
       }
     };
 
-    socket.on("message", handler);
+    socket.on('message', handler);
 
     const onLoad = () => {
       setGameoverDialog(true);
@@ -104,14 +108,26 @@ const Game = () => {
       }
     }, 100);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      socket?.emit('message', {
+        type: PLAYER_LEFT,
+      });
+    };
   }, [game]);
 
   const handleResign = () => {
     if (!socket) return;
 
-    socket.emit("message", {
+    socket.emit('message', {
       type: RESIGN,
+    });
+  };
+
+  const handleDragEnd = (from: Square, to: Square) => {
+    socket?.emit('message', {
+      type: MOVE,
+      move: { from: from, to: to },
     });
   };
 
@@ -121,9 +137,9 @@ const Game = () => {
     </div>
   ) : (
     <div className="grid grid-cols-1 grid-rows-1 mt-10">
-      <div className="mx-auto max-w-5xl gap-5 grid grid-cols-1 lg:grid-cols-[auto_1fr] grid-rows-1">
+      <div className="px-5 mx-auto max-w-4xl w-full gap-5 grid grid-cols-1 md:grid-cols-5 grid-rows-1">
         {/* Board */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 col-span-3">
           <div className="flex items-center mb-2 justify-between">
             {game.status === INQUEUE ? (
               <div className="flex items-center mb-2 gap-4 cursor-progress">
@@ -136,13 +152,13 @@ const Game = () => {
                 <img
                   src={
                     game.opponent?.avatar ||
-                    "https://api.dicebear.com/9.x/thumbs/svg?seed=opponent"
+                    'https://api.dicebear.com/9.x/thumbs/svg?seed=opponent'
                   }
                   alt="opponent avatar"
                   className="w-10 h-10 rounded-full"
                   referrerPolicy="no-referrer"
                 />
-                {game.opponent?.name || "Opponent"}
+                {game.opponent?.name || 'Opponent'}
               </div>
             )}
             <div>
@@ -150,16 +166,22 @@ const Game = () => {
               {Math.floor(opponentTimeLeft / 1000 / 60)}:
               {(Math.floor(opponentTimeLeft / 1000) % 60)
                 .toString()
-                .padStart(2, "0")}
+                .padStart(2, '0')}
             </div>
           </div>
-          <Board chess={chess} boardVerision={boardVerision} socket={socket} />
+          <Board
+            chess={chess}
+            blackBottom={game.you === 'b'}
+            onDragEnd={handleDragEnd}
+            yourColor={game.you || undefined}
+            className="sm:max-w-[70vw]"
+          />
           <div className="flex items-center mb-2 justify-between">
             <div className="flex items-center gap-4">
               <img
                 src={
                   user.avatar ||
-                  "https://api.dicebear.com/9.x/thumbs/svg?seed=you"
+                  'https://api.dicebear.com/9.x/thumbs/svg?seed=you'
                 }
                 alt="your avatar"
                 className="w-10 h-10 rounded-full"
@@ -173,13 +195,13 @@ const Game = () => {
               {Math.floor(yourTimeLeft / 1000 / 60)}:
               {(Math.floor(yourTimeLeft / 1000) % 60)
                 .toString()
-                .padStart(2, "0")}
+                .padStart(2, '0')}
             </div>
           </div>
         </div>
 
         {/* Details */}
-        <div className="bg-gray-800 min-w-sm h-full p-5 rounded-xl grid-rows-[auto_1fr]">
+        <div className="bg-accent h-full p-5 rounded-xl grid-rows-[auto_1fr] col-span-2">
           <div className="grid grid-cols-2 mb-4 gap-4">
             {game.status === INIT_GAME && (
               <Tooltip>
@@ -204,10 +226,7 @@ const Game = () => {
               <TabsTrigger value="chat">Chat</TabsTrigger>
               <TabsTrigger value="moves">Moves</TabsTrigger>
             </TabsList>
-            <TabsContent
-              value="chat"
-              className="overflow-y-auto h-[60vh]"
-            >
+            <TabsContent value="chat" className="overflow-y-auto h-[60vh]">
               <ChatsPanel />
             </TabsContent>
             <TabsContent value="moves" className="overflow-y-auto h-[60vh]">
@@ -226,21 +245,21 @@ const Game = () => {
           <DialogHeader>
             <DialogTitle className="text-center flex flex-col gap-4 items-center justify-center">
               <p className="text-2xl font-bold">
-                {game.result === "b"
-                  ? "Black Won"
-                  : game.result === "w"
-                  ? "White Won"
-                  : "Draw"}
+                {game.result === 'b'
+                  ? 'Black Won'
+                  : game.result === 'w'
+                    ? 'White Won'
+                    : 'Draw'}
               </p>
               <p className="text-lg font-medium">
-                {game.reason || "No reason provided"}
+                {game.reason || 'No reason provided'}
               </p>
             </DialogTitle>
             <DialogDescription></DialogDescription>
           </DialogHeader>
           <div className="grid gap-4"></div>
           <DialogFooter>
-            <Button type="submit" onClick={() => navigate("/")}>
+            <Button type="submit" onClick={() => navigate('/')}>
               Go Home
             </Button>
           </DialogFooter>

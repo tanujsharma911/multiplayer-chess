@@ -8,9 +8,10 @@ import {
   TIME_OUT,
   RESIGN,
   CHAT,
-} from "./messages.js";
-import { Game } from "./Game.js";
-import { User } from "./SocketManager.js";
+  PLAYER_LEFT,
+} from './messages.js';
+import { Game } from './Game.js';
+import { User } from './SocketManager.js';
 
 export class GameManager {
   private games: Game[]; // TODO: Use map
@@ -29,11 +30,11 @@ export class GameManager {
     if (existingUser) {
       try {
         // detach previous handlers (if any) to avoid duplicates
-        existingUser.socket.off("message", () => {});
+        existingUser.socket.off('message', () => {});
       } catch (e) {}
 
       existingUser.setSocket(user.socket);
-      console.log("🔄 User socket updated:", user.email);
+      console.log('🔄 User socket updated:', user.email);
 
       this.addHandler(user);
 
@@ -66,7 +67,7 @@ export class GameManager {
   }
 
   addHandler(user: User) {
-    user.socket.on("message", (msg) => {
+    user.socket.on('message', (msg) => {
       const message = JSON.parse(JSON.stringify(msg));
 
       // --------------------------------- INIT_GAME ----------------------------------
@@ -75,9 +76,9 @@ export class GameManager {
       if (message.type === INIT_GAME) {
         // If user is already in a game, reject
         if (user.inGame) {
-          user.socket.emit("message", {
+          user.socket.emit('message', {
             type: ERROR,
-            payload: { message: "Already in a game" },
+            payload: { message: 'Already in a game' },
           });
           return;
         }
@@ -86,14 +87,14 @@ export class GameManager {
           // put user in pending
           this.pendingUser = user;
 
-          console.log("⏳ User is in queue...");
+          console.log('⏳ User is in queue...');
 
-          user.socket.emit("message", { type: INQUEUE, payload: {} });
+          user.socket.emit('message', { type: INQUEUE, payload: {} });
         } else if (this.pendingUser.userId === user.userId) {
           // If the pending user is the same as the current user
           // user re-requested; just keep them in queue
 
-          user.socket.emit("message", { type: INQUEUE, payload: {} });
+          user.socket.emit('message', { type: INQUEUE, payload: {} });
         } else {
           // If there's a pending user, start the game
           // Start the game
@@ -103,12 +104,12 @@ export class GameManager {
 
           this.pendingUser = null;
 
-          console.log("🧩 Game started", this.games.length);
+          console.log('🧩 Game started', this.games.length);
 
-          game.player1.socket.emit("message", {
+          game.player1.socket.emit('message', {
             type: INIT_GAME,
             payload: {
-              you: "b",
+              you: 'b',
               turn: game.board.turn(),
               opponent: {
                 name: game.player2.name,
@@ -118,10 +119,10 @@ export class GameManager {
               },
             },
           });
-          game.player2.socket.emit("message", {
+          game.player2.socket.emit('message', {
             type: INIT_GAME,
             payload: {
-              you: "w",
+              you: 'w',
               turn: game.board.turn(),
               opponent: {
                 name: game.player1.name,
@@ -148,9 +149,9 @@ export class GameManager {
             this.games = this.games.filter((g) => g !== game);
           }
         } else {
-          user.socket.emit("message", {
+          user.socket.emit('message', {
             type: ERROR,
-            payload: { message: "no game found in which you are" },
+            payload: { message: 'no game found in which you are' },
           });
         }
       }
@@ -165,9 +166,9 @@ export class GameManager {
           game.playerResign(user);
           this.games = this.games.filter((g) => g !== game);
         } else {
-          user.socket.emit("message", {
+          user.socket.emit('message', {
             type: ERROR,
-            payload: { message: "no game found in which you are" },
+            payload: { message: 'no game found in which you are' },
           });
         }
       }
@@ -181,11 +182,14 @@ export class GameManager {
         if (game) {
           game.chat(user, message.payload);
         } else {
-          user.socket.emit("message", {
+          user.socket.emit('message', {
             type: ERROR,
-            payload: { message: "no game found in which you are" },
+            payload: { message: 'no game found in which you are' },
           });
         }
+      }
+      // --------------------------------- LEFT GAME ----------------------------------
+      else if (message.type === PLAYER_LEFT) {
       }
     });
   }

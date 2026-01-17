@@ -1,27 +1,28 @@
-import { createRoot } from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router";
+import { createRoot } from 'react-dom/client';
+import { createBrowserRouter, RouterProvider } from 'react-router';
 
-import "./index.css";
+import './index.css';
 
-import App from "./App.tsx";
-import Home from "./pages/Home.tsx";
-import Game from "./pages/Game.tsx";
-import Login from "./pages/Login.tsx";
-import AuthLayout from "./components/AuthLayout.tsx";
-import Account from "./pages/Account.tsx";
-import Analyse from "./pages/Analyse.tsx";
+import App from './App.tsx';
+import Home from './pages/Home.tsx';
+import Game from './pages/Game.tsx';
+import Login from './pages/Login.tsx';
+import AuthLayout from './components/AuthLayout.tsx';
+import Account from './pages/Account.tsx';
+import Analyse from './pages/Analyse.tsx';
+import PlayWithBot from './pages/Bot.tsx';
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: '/',
     element: <App />,
     children: [
       {
-        path: "/",
+        path: '/',
         element: <Home />,
       },
       {
-        path: "/game",
+        path: '/game/random',
         element: (
           <AuthLayout authRequired>
             <Game />
@@ -29,7 +30,15 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/login",
+        path: '/game/bot',
+        element: (
+          <AuthLayout authRequired>
+            <PlayWithBot />
+          </AuthLayout>
+        ),
+      },
+      {
+        path: '/login',
         element: <Login />,
       },
       // {
@@ -49,7 +58,7 @@ const router = createBrowserRouter([
       //   ),
       // },
       {
-        path: "/account",
+        path: '/account',
         element: (
           <AuthLayout authRequired>
             <Account />
@@ -57,7 +66,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/analyse/:gameId",
+        path: '/analyse/:gameId',
         element: (
           <AuthLayout authRequired>
             <Analyse />
@@ -72,6 +81,6 @@ const router = createBrowserRouter([
   },
 ]);
 
-createRoot(document.getElementById("root")!).render(
+createRoot(document.getElementById('root')!).render(
   <RouterProvider router={router} />
 );

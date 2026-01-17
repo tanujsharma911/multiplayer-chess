@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
-import type { MoveType } from "@/pages/Game";
+import { cn } from '@/lib/utils';
+import type { MoveType } from '@/pages/Game';
 
 const Moves = ({
   moves,
@@ -9,16 +9,16 @@ const Moves = ({
   currentMove?: number | null;
 }) => {
   return (
-    <div className="grid grid-cols-2 place-content-start overflow-scroll">
+    <div className="grid grid-cols-2 place-content-start bg-background overflow-scroll">
       {moves.map((move, index) => (
         <div key={index} className="flex h-fit gap-6 py-1 px-2 rounded">
           <div className="text-gray-500">
-            {index % 2 === 0 && index / 2 + 1 + "."}
+            {index % 2 === 0 && index / 2 + 1 + '.'}
           </div>
           <div
             className={cn(
-              "py-1 px-2 rounded-md",
-              index === currentMove ? "bg-black/20" : ""
+              'py-1 px-2 rounded-md',
+              index === currentMove ? 'bg-black/20' : ''
             )}
           >
             {move.san}

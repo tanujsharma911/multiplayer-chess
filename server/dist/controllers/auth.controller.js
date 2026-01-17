@@ -1,6 +1,7 @@
-import { oauth2Client } from "../utils/googleConfig.js";
-import axios from "axios";
-import { User } from "../models/user.model.js";
+import { oauth2Client } from '../utils/googleConfig.js';
+import axios from 'axios';
+import { User } from '../models/user.model.js';
+import { cookieOptions } from '../constants.js';
 const generateAccessAndRefreshTokens = (user) => {
     try {
         const accessToken = user.generateAccessToken();
@@ -8,8 +9,8 @@ const generateAccessAndRefreshTokens = (user) => {
         return { accessToken, refreshToken };
     }
     catch (error) {
-        console.error("Error generating tokens:", error);
-        throw new Error("Internal server error :: token generation failed");
+        console.error('Error generating tokens:', error);
+        throw new Error('Internal server error :: token generation failed');
     }
 };
 const googleLogin = async (req, res) => {
@@ -18,8 +19,8 @@ const googleLogin = async (req, res) => {
         if (!code) {
             res.status(400).json({
                 code: 400,
-                status: "error",
-                message: "Bad Request :: Missing auth code",
+                status: 'error',
+                message: 'Bad Request :: Missing auth code',
             });
             return;
         }
@@ -39,25 +40,19 @@ const googleLogin = async (req, res) => {
         if (!user) {
             return res.status(500).json({
                 code: 500,
-                status: "error",
+                status: 'error',
                 message: "Internal Server Error :: Can't register user",
             });
         }
         const { accessToken, refreshToken } = generateAccessAndRefreshTokens(user);
         user.refreshToken = refreshToken;
         await user.save({ validateBeforeSave: false }); // skip validation
-        const isProd = process.env.NODE_ENV === "production"; // TODO: Why it is required
-        const cookiesOptions = {
-            httpOnly: true,
-            secure: isProd,
-            sameSite: 'none',
-        };
         res
-            .cookie("accessToken", accessToken, cookiesOptions)
-            .cookie("refreshToken", refreshToken, cookiesOptions)
+            .cookie('accessToken', accessToken, cookieOptions)
+            .cookie('refreshToken', refreshToken, cookieOptions)
             .json({
             code: 200,
-            status: "success",
+            status: 'success',
             user: {
                 name,
                 email,
@@ -66,10 +61,10 @@ const googleLogin = async (req, res) => {
         });
     }
     catch (error) {
-        console.error("Error fetching Google user data:", error);
+        console.error('Error fetching Google user data:', error);
         return res
             .status(500)
-            .json({ code: 500, status: "error", message: "Internal Server Error" });
+            .json({ code: 500, status: 'error', message: 'Internal Server Error' });
     }
 };
 const getUserInfo = async (req, res) => {
@@ -78,21 +73,21 @@ const getUserInfo = async (req, res) => {
         if (!userEmail) {
             return res.status(400).json({
                 code: 400,
-                status: "error",
-                message: "Bad Request :: Missing user email",
+                status: 'error',
+                message: 'Bad Request :: Missing user email',
             });
         }
         const user = await User.findOne({ email: userEmail });
         if (!user) {
             return res.status(404).json({
                 code: 404,
-                status: "error",
-                message: "User not found",
+                status: 'error',
+                message: 'User not found',
             });
         }
         res.status(200).json({
             code: 200,
-            status: "success",
+            status: 'success',
             user: {
                 name: user.name,
                 email: user.email,
@@ -101,10 +96,10 @@ const getUserInfo = async (req, res) => {
         });
     }
     catch (error) {
-        console.error("Error retrieving user info:", error);
+        console.error('Error retrieving user info:', error);
         return res
             .status(500)
-            .json({ code: 500, status: "error", message: "Internal Server Error" });
+            .json({ code: 500, status: 'error', message: 'Internal Server Error' });
     }
 };
 const userLogout = async (req, res) => {
@@ -113,26 +108,26 @@ const userLogout = async (req, res) => {
         if (!refreshToken) {
             return res.status(400).json({
                 code: 400,
-                status: "error",
-                message: "Bad Request :: Missing refresh token",
+                status: 'error',
+                message: 'Bad Request :: Missing refresh token',
             });
         }
         const user = await User.findOne({ refreshToken });
         if (user) {
-            user.refreshToken = "";
+            user.refreshToken = '';
             await user.save({ validateBeforeSave: false });
         }
-        res.clearCookie("accessToken").clearCookie("refreshToken").json({
+        res.clearCookie('accessToken').clearCookie('refreshToken').json({
             code: 200,
-            status: "success",
-            message: "Logged out successfully",
+            status: 'success',
+            message: 'Logged out successfully',
         });
     }
     catch (error) {
-        console.error("Error during logout:", error);
+        console.error('Error during logout:', error);
         return res
             .status(500)
-            .json({ code: 500, status: "error", message: "Internal Server Error" });
+            .json({ code: 500, status: 'error', message: 'Internal Server Error' });
     }
 };
 const refreshAccessToken = async (req, res) => {
@@ -141,34 +136,28 @@ const refreshAccessToken = async (req, res) => {
         if (!refreshToken) {
             return res.status(400).json({
                 code: 400,
-                status: "error",
-                message: "Bad Request :: Missing refresh token",
+                status: 'error',
+                message: 'Bad Request :: Missing refresh token',
             });
         }
         const user = await User.findOne({ refreshToken });
         if (!user) {
             return res.status(401).json({
                 code: 401,
-                status: "error",
-                message: "Unauthorized :: Invalid refresh token",
+                status: 'error',
+                message: 'Unauthorized :: Invalid refresh token',
             });
         }
         const tokens = generateAccessAndRefreshTokens(user);
         user.refreshToken = tokens.refreshToken;
         await user.save({ validateBeforeSave: false });
-        const isProd = process.env.NODE_ENV === "production";
-        const cookiesOptions = {
-            httpOnly: true,
-            secure: isProd,
-            sameSite: 'none',
-        };
         res
-            .cookie("accessToken", tokens.accessToken, cookiesOptions)
-            .cookie("refreshToken", tokens.refreshToken, cookiesOptions)
+            .cookie('accessToken', tokens.accessToken, cookieOptions)
+            .cookie('refreshToken', tokens.refreshToken, cookieOptions)
             .json({
             code: 200,
-            status: "success",
-            message: "Tokens refreshed successfully",
+            status: 'success',
+            message: 'Tokens refreshed successfully',
             user: {
                 name: user.name,
                 email: user.email,
@@ -177,10 +166,10 @@ const refreshAccessToken = async (req, res) => {
         });
     }
     catch (error) {
-        console.error("Error refreshing tokens:", error);
+        console.error('Error refreshing tokens:', error);
         return res
             .status(500)
-            .json({ code: 500, status: "error", message: "Internal Server Error" });
+            .json({ code: 500, status: 'error', message: 'Internal Server Error' });
     }
 };
 export { googleLogin, userLogout, getUserInfo, refreshAccessToken };

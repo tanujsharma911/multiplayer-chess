@@ -1,24 +1,27 @@
-import { Outlet } from "react-router";
-import { useSocket } from "./hooks/useSocket";
-import { useSocketStore } from "./store/socket";
-import { useEffect, useState } from "react";
-import { GoogleOAuthProvider } from "@react-oauth/google";
-import { Toaster } from "sonner";
-import Navbar from "./components/Navbar";
-import useUser from "./store/user";
-import useApiPrivate from "./hooks/useAxiosPrivate";
+import { Outlet } from 'react-router';
+import { useSocket } from './hooks/useSocket';
+import { useSocketStore } from './store/socket';
+import { useEffect, useState } from 'react';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { Toaster } from 'sonner';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+
+import useUser from './store/user';
+import useApiPrivate from './hooks/useAxiosPrivate';
+import AppSidebar from './components/SideBar';
 
 // import Stockfish from "./engine/stockfish.worker.js";
 
-export const ERROR = "error";
-export const INQUEUE = "inqueue";
-export const INIT_GAME = "init_game";
-export const MOVE = "move";
-export const TIME_OUT = "time_out";
-export const EXIT_GAME = "exit_game";
-export const GAME_OVER = "game_over";
-export const RESIGN = "resign";
-export const CHAT = "chat";
+export const ERROR = 'error';
+export const INQUEUE = 'inqueue';
+export const INIT_GAME = 'init_game';
+export const MOVE = 'move';
+export const TIME_OUT = 'time_out';
+export const EXIT_GAME = 'exit_game';
+export const GAME_OVER = 'game_over';
+export const RESIGN = 'resign';
+export const CHAT = 'chat';
+export const PLAYER_LEFT = 'player_left';
 
 function App() {
   const socket = useSocket();
@@ -39,23 +42,30 @@ function App() {
     if (user.isLoggedIn) return;
 
     const getUserInfo = async () => {
-      const userInfo = await api.get("/auth/getuser").then((res) => res.data);
+      try {
+        const userInfo = await api
+          .get('/auth/getuser', { withCredentials: true })
+          .then((res) => res.data);
 
-      if (userInfo?.user?.email) {
-        loginUser({
-          name: userInfo.user.name,
-          email: userInfo.user.email,
-          avatar: userInfo.user.avatar,
-        });
+        if (userInfo?.user?.email) {
+          loginUser({
+            name: userInfo.user.name,
+            email: userInfo.user.email,
+            avatar: userInfo.user.avatar,
+          });
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_) {
+        /* empty */
       }
     };
 
     getUserInfo().finally(() => setIsLoading(false));
   }, []);
 
-  if (!user || isLoading) {
+  if (isLoading) {
     return (
-      <div className="w-full min-h-screen flex justify-center items-center bg-gray-900 text-white">
+      <div className="w-full min-h-screen flex justify-center items-center bg-background text-white">
         Loading...
       </div>
     );
@@ -63,19 +73,14 @@ function App() {
 
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-      <div className="bg-gray-900 min-h-screen grid grid-rows-[auto_1fr_auto] lg:overflow-hidden text-white">
-        <Navbar />
-
-        <div className="relative grid grid-rows-1 grid-cols-1 overflow-hidden">
-          <Outlet />
-        </div>
-
-        <div className="text-center border- text-xs text-gray-500">
-          Made by{" "}
-          <a href="https://github.com/tanujsharma911" className="underline">
-            Tanuj Sharma
-          </a>
-        </div>
+      <div className="relative h-screen lg:overflow-hidden text-white bg-linear-to-t from-background to-[#121212]">
+        <SidebarProvider>
+          <AppSidebar />
+          <main className="w-full">
+            <SidebarTrigger className="size-10 m-2" />
+            <Outlet />
+          </main>
+        </SidebarProvider>
       </div>
       <Toaster richColors />
     </GoogleOAuthProvider>

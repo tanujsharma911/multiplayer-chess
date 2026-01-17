@@ -7,3 +7,4 @@ export const EXIT_GAME = "exit_game";
 export const GAME_OVER = "game_over";
 export const RESIGN = "resign";
 export const CHAT = "chat";
+export const PLAYER_LEFT = "player_left";
