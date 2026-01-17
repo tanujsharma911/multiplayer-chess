@@ -1,5 +1,6 @@
 export const ERROR = "error";
 export const INQUEUE = "inqueue";
+export const GET_ME = "get_me";
 export const INIT_GAME = "init_game";
 export const MOVE = "move";
 export const TIME_OUT = "time_out";

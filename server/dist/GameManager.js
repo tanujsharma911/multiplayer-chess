@@ -1,4 +1,4 @@
-import { ERROR, GAME_OVER, INIT_GAME, INQUEUE, MOVE, EXIT_GAME, TIME_OUT, RESIGN, CHAT, PLAYER_LEFT, } from './messages.js';
+import { ERROR, GAME_OVER, INIT_GAME, INQUEUE, MOVE, EXIT_GAME, TIME_OUT, RESIGN, CHAT, PLAYER_LEFT, GET_ME, } from './messages.js';
 import { Game } from './Game.js';
 import { User } from './SocketManager.js';
 export class GameManager {
@@ -19,15 +19,12 @@ export class GameManager {
             }
             catch (e) { }
             existingUser.setSocket(user.socket);
-            console.log('🔄 User socket updated:', user.email);
-            this.addHandler(user);
-            return existingUser;
+            this.addHandler(existingUser);
         }
         else {
             // Add new user
             this.users.push(user);
             this.addHandler(user);
-            return user;
         }
     }
     removeUser(user) {
@@ -44,9 +41,55 @@ export class GameManager {
     addHandler(user) {
         user.socket.on('message', (msg) => {
             const message = JSON.parse(JSON.stringify(msg));
-            // --------------------------------- INIT_GAME ----------------------------------
             // NOTE: For high concurrency use a proper lock or queue library.
-            if (message.type === INIT_GAME) {
+            // --------------------------------- GET_ME ----------------------------------
+            if (message.type === GET_ME) {
+                console.log('🫵 GET / me', msg);
+                if (user.inGame === true) {
+                    const gameId = user.gameId;
+                    const game = this.games.find((game) => game.gameId === gameId);
+                    if (!game) {
+                        console.log('❗️ GET / me', msg);
+                        user.socket.emit('message', {
+                            type: ERROR,
+                            payload: {
+                                message: "Can't find game in which you are",
+                            },
+                        });
+                        return;
+                    }
+                    const isUserBlack = game.player1.userId === user.userId;
+                    user.socket.emit('message', {
+                        type: GET_ME,
+                        payload: {
+                            inGame: true,
+                            gameId: user.gameId,
+                            you: isUserBlack ? 'b' : 'w',
+                            turn: game.board.turn(),
+                            clock: game.clocks,
+                            chats: game.chats,
+                            opponent: {
+                                name: game.player2.name,
+                                email: game.player2.email,
+                                avatar: game.player2.avatar,
+                                userId: game.player2.userId,
+                            },
+                            board: game.board.fen(),
+                            moves: game.moves,
+                        },
+                    });
+                }
+                else {
+                    user.socket.emit('message', {
+                        type: GET_ME,
+                        payload: {
+                            inGame: false,
+                        },
+                    });
+                }
+            }
+            // --------------------------------- INIT_GAME ----------------------------------
+            else if (message.type === INIT_GAME) {
                 // If user is already in a game, reject
                 if (user.inGame) {
                     user.socket.emit('message', {
@@ -76,6 +119,7 @@ export class GameManager {
                     game.player1.socket.emit('message', {
                         type: INIT_GAME,
                         payload: {
+                            gameId: game.gameId,
                             you: 'b',
                             turn: game.board.turn(),
                             opponent: {
@@ -89,6 +133,7 @@ export class GameManager {
                     game.player2.socket.emit('message', {
                         type: INIT_GAME,
                         payload: {
+                            gameId: game.gameId,
                             you: 'w',
                             turn: game.board.turn(),
                             opponent: {

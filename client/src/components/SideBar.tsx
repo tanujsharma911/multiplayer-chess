@@ -31,7 +31,7 @@ const AppSidebar = (): JSX.Element => {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel slot=''>Play</SidebarGroupLabel>
+          <SidebarGroupLabel slot="">Play</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>

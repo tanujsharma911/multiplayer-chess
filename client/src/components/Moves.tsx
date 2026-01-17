@@ -9,7 +9,7 @@ const Moves = ({
   currentMove?: number | null;
 }) => {
   return (
-    <div className="grid grid-cols-2 place-content-start bg-background overflow-scroll">
+    <div className="grid grid-cols-2 place-content-start rounded-md bg-background overflow-scroll">
       {moves.map((move, index) => (
         <div key={index} className="flex h-fit gap-6 py-1 px-2 rounded">
           <div className="text-gray-500">

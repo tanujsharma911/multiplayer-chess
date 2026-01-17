@@ -65,11 +65,8 @@ io.on("connection", (socket) => {
         socket.disconnect();
         return;
     }
-    const user = new User(userDetails?.userId, userDetails?.email, userDetails?.name, userDetails?.avatar, socket);
-    const canonicalUser = gameManager.addUser(user);
-    socket.on("disconnect", () => {
-        gameManager.removeUser(canonicalUser);
-    });
+    const user = new User(userDetails?.userId, null, userDetails?.email, userDetails?.name, userDetails?.avatar, socket);
+    gameManager.addUser(user);
 });
 connectDB().then(() => {
     const PORT = process.env.PORT || 3000;

@@ -4,12 +4,14 @@ export class User {
   public userId: string;
   public socket: Socket;
   public inGame: boolean;
+  public gameId: string | null;
   public email?: string;
   public name?: string;
   public avatar?: string;
 
-  constructor(userId: string, email: string, name: string, avatar: string, socket: Socket) {
+  constructor(userId: string, gameId: string | null, email: string, name: string, avatar: string, socket: Socket) {
     this.userId = userId;
+    this.gameId = gameId;
     this.email = email;
     this.name = name;
     this.avatar = avatar;

@@ -30,6 +30,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: '/game/:gameId',
+        element: (
+          <AuthLayout authRequired>
+            <Game />
+          </AuthLayout>
+        ),
+      },
+      {
         path: '/game/bot',
         element: (
           <AuthLayout authRequired>

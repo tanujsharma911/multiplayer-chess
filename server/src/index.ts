@@ -89,17 +89,14 @@ io.on("connection", (socket) => {
 
   const user: User = new User(
     userDetails?.userId,
+    null,
     userDetails?.email,
     userDetails?.name,
     userDetails?.avatar,
     socket
   );
 
-  const canonicalUser = gameManager.addUser(user); 
-
-  socket.on("disconnect", () => {
-    gameManager.removeUser(canonicalUser); 
-  });
+  gameManager.addUser(user); 
 });
 
 connectDB().then(() => {

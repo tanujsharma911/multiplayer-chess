@@ -4,6 +4,7 @@ import { useSocketStore } from '../store/socket';
 import { useEffect, useState } from 'react';
 import {
   GAME_OVER,
+  GET_ME,
   INIT_GAME,
   INQUEUE,
   MOVE,
@@ -35,9 +36,21 @@ import ChatsPanel from '@/components/ChatsPanel';
 type messageType = {
   type: string;
   payload: {
-    board: string;
-    turn: 'w' | 'b';
+    board?: string;
+    turn?: 'w' | 'b';
     move: MoveType;
+    inGame?: boolean;
+    you?: 'b' | 'w';
+    opponent?: {
+      name?: string;
+      email?: string;
+      avatar?: string;
+      userId?: string;
+    };
+    gameId?: string | null;
+    moves?: MoveType[];
+    chats?: { time: string; message: string; from: string }[];
+    clock?: { w: number; b: number };
   };
 };
 
@@ -57,7 +70,7 @@ const moveSound = new Audio('/sounds/move.wav');
 const Game = () => {
   const navigate = useNavigate();
   const { socket } = useSocketStore();
-  const { game, setTurn } = useGame();
+  const { game, setGame, setTurn, setClear } = useGame();
   const { user } = useUser();
 
   const [chess, setChess] = useState(new Chess());
@@ -70,9 +83,45 @@ const Game = () => {
     if (!socket) {
       return;
     }
-    socket.emit('message', { type: INIT_GAME });
+    socket.emit('message', { type: GET_ME });
 
-    const handler = (msg: messageType) => {
+    const messageHandler = (msg: messageType) => {
+      if (msg.type === GET_ME) {
+        if (msg.payload.inGame === true) {
+          navigate('/game/' + msg.payload.gameId);
+          const position = msg.payload.board;
+
+          setChess(new Chess(position));
+
+          if (msg.payload.moves) setMoves(msg.payload.moves);
+
+          setGame({
+            gameId: msg.payload.gameId,
+            you: msg.payload.you,
+            opponent: msg.payload.opponent,
+            turn: msg.payload.turn,
+            chats: msg.payload.chats,
+          });
+
+          const clock = msg.payload.clock;
+
+          if (clock && msg.payload.you) setYourTimeLeft(clock[msg.payload.you]);
+          if (clock && msg.payload.you)
+            setOpponentTimeLeft(clock[msg.payload.you === 'w' ? 'b' : 'w']);
+
+          if (msg.payload.moves) setMoves(msg.payload.moves);
+        } else {
+          navigate('/game/random');
+          socket.emit('message', { type: INIT_GAME });
+
+          setGameoverDialog(true);
+          setChess(new Chess());
+          setYourTimeLeft(10 * 60 * 1000);
+          setOpponentTimeLeft(10 * 60 * 1000);
+          setMoves([]);
+          setClear();
+        }
+      }
       if (msg.type === MOVE) {
         const newChess = new Chess(msg.payload.board);
 
@@ -80,15 +129,15 @@ const Game = () => {
           moveSound.play();
         }
 
-        setMoves((prev) => [...prev, msg.payload.move]);
+        if (msg.payload.move) setMoves((prev) => [...prev, msg.payload.move]);
 
         setChess(newChess);
 
-        setTurn(msg.payload.turn);
+        if (msg.payload.turn) setTurn(msg.payload.turn);
       }
     };
 
-    socket.on('message', handler);
+    socket.on('message', messageHandler);
 
     const onLoad = () => {
       setGameoverDialog(true);

@@ -4,7 +4,7 @@ export declare class GameManager {
     private users;
     private pendingUser;
     constructor();
-    addUser(user: User): User;
+    addUser(user: User): void;
     removeUser(user: User): void;
     addHandler(user: User): void;
 }

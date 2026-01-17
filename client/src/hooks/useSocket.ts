@@ -9,12 +9,14 @@ import {
   CHAT,
 } from '../App';
 import { useGame } from '../store/game';
+import { useNavigate } from 'react-router';
 
 const gameSound = new Audio('/sounds/game-end.mp3');
 
 export const useSocket = (): Socket | null => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const { setQueue, setGame, setOver, setChat } = useGame();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const newSocket = io(import.meta.env.VITE_SERVER_URL, {
@@ -31,6 +33,7 @@ export const useSocket = (): Socket | null => {
       } else if (msg?.type === INIT_GAME) {
         gameSound.play();
         setGame({ ...msg.payload, isPending: false });
+        navigate('/game/' + msg.payload.gameId);
       } else if (msg?.type === GAME_OVER) {
         gameSound.play();
         setOver({ reason: msg.payload.reason, result: msg.payload.result });
