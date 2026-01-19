@@ -19,7 +19,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ChatHistory from '@/components/ChatHistory';
 import useUser from '@/store/user';
-import { getAnalysis } from '@/lib/utils';
+// import { getAnalysis } from '@/lib/utils';
 import { Chess } from 'chess.js';
 
 const Analyse = () => {
@@ -31,9 +31,9 @@ const Analyse = () => {
   const [currentMove, setCurrentMove] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  const setAnalysis = async (fen: string) => {
-    const res = await getAnalysis(fen);
-  };
+  // const setAnalysis = async (fen: string) => {
+  //   await getAnalysis(fen);
+  // };
 
   const handleMoveChange = async (move: number) => {
     if (!game) return;
@@ -43,7 +43,7 @@ const Analyse = () => {
     setCurrentMove(move);
     setCurrentPosition(game.moves[move].after);
 
-    await setAnalysis(game.moves[move].after);
+    // await setAnalysis(game.moves[move].after);
   };
 
   useEffect(() => {
@@ -57,7 +57,7 @@ const Analyse = () => {
 
         await handleMoveChange(0);
         setCurrentPosition(response.game.moves[0].after);
-        await setAnalysis(response.game.moves[0].after);
+        // await setAnalysis(response.game.moves[0].after);
       } catch (error) {
         console.error('Error fetching game details:', error);
         setError('Failed to load game details.');

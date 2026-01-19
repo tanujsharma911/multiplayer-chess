@@ -18,6 +18,7 @@ interface BoardProps {
   onDragStart?: (from: Square) => void;
   onDragEnd?: (from: Square, to: Square) => void;
   className?: string;
+  animate?: boolean;
 }
 
 const Board = (props: BoardProps) => {
@@ -30,6 +31,7 @@ const Board = (props: BoardProps) => {
     onDragStart: onDragStartProp,
     onDragEnd: onDragEndProp,
     className,
+    animate = false,
   } = props;
 
   const chess = chessInstance || new Chess(position || undefined);
@@ -78,7 +80,7 @@ const Board = (props: BoardProps) => {
     <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
       <div
         className={cn(
-          'aspect-square grid grid-rows-8',
+          'aspect-square grid grid-rows-8 opacity-90',
           className,
           blackBottom ? 'rotate-180' : ''
         )}
@@ -90,6 +92,7 @@ const Board = (props: BoardProps) => {
                 {row.map((cell, c) => {
                   return (
                     <BoardSquare
+                      delay={animate ? (r + c) * 100 : 0}
                       key={r + c}
                       cell={cell}
                       c={c}
@@ -99,6 +102,7 @@ const Board = (props: BoardProps) => {
                       isAllowed={
                         chess.turn() === yourColor && yourColor === cell?.color
                       }
+                      animate={animate}
                     />
                   );
                 })}

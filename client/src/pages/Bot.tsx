@@ -53,7 +53,7 @@ const bots = [
 const PlayWithBot = () => {
   const { user } = useUser();
 
-  const [game, setGame] = useState(new Chess());
+  const game = new Chess();
   const [level, setLevel] = useState<number | null>(null);
   const [currentPosition, setCurrentPosition] = useState<string | null>(null);
   const [currentMove, setCurrentMove] = useState(0);

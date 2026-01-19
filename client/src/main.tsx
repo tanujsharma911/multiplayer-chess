@@ -39,11 +39,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/game/bot',
-        element: (
-          <AuthLayout authRequired>
-            <PlayWithBot />
-          </AuthLayout>
-        ),
+        element: <PlayWithBot />,
       },
       {
         path: '/login',

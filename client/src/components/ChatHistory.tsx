@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 interface PropsTypes {
   chats?: {
     message: string;
-    time: string;
+    time: string | Date;
     from: string;
   }[];
   playerColor?: string;
@@ -17,7 +17,7 @@ const ChatHistory = (props: PropsTypes) => {
   const { game } = useGame();
 
   const [chats, setChats] = useState<
-    { time: string; message: string; from: string }[]
+    { time: string | Date; message: string; from: string }[]
   >(chatsProp || game?.chats || []);
 
   const yourColor = playerColor || game?.you;

@@ -1,18 +1,22 @@
 import { useDroppable } from '@dnd-kit/core';
 import type { Color, Move, PieceSymbol, Square } from 'chess.js';
 import Piece from './Piece';
+import { cn } from '@/lib/utils';
 
 interface SquareProps {
+  delay: number;
   cell: { square: Square; type: PieceSymbol; color: Color } | null;
   r: number;
   c: number;
   isAllowed?: boolean;
   blackBottom?: boolean;
   valideMoves?: Move[];
+  animate?: boolean;
 }
 
 const BoardSquare = (props: SquareProps) => {
-  const { cell, isAllowed, r, c, blackBottom, valideMoves } = props;
+  const { delay, cell, isAllowed, r, c, blackBottom, valideMoves, animate } =
+    props;
 
   const colIndex: string = String.fromCharCode(97 + c);
   const rowIndex: string = 8 - r + '';
@@ -27,11 +31,19 @@ const BoardSquare = (props: SquareProps) => {
     <div
       key={c + r}
       ref={setNodeRef}
-      className={`relative aspect-square ${
-        (r + c) % 2 === 0
-          ? 'bg-gray-300 text-gray-400'
-          : 'bg-gray-400 text-gray-300'
-      }`}
+      className={cn(
+        `relative aspect-square ${
+          (r + c) % 2 === 0
+            ? 'bg-gray-300 text-gray-400'
+            : 'bg-gray-400 text-gray-300'
+        }`,
+        animate
+          ? 'motion-scale-in-0 motion-ease-out motion-opacity-in-0 motion-blur-in-sm'
+          : ''
+      )}
+      style={{
+        animationDelay: `${delay}ms`,
+      }}
     >
       {/* Coordinates */}
       <div
@@ -70,6 +82,8 @@ const BoardSquare = (props: SquareProps) => {
       >
         {cell?.type && (
           <Piece
+            delay={delay}
+            animate={animate}
             blackBottom={blackBottom}
             squareId={squareId}
             isAllowed={isAllowed}

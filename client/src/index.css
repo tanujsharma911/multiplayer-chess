@@ -20,6 +20,20 @@ button:disabled {
   font-family: 'Jua', sans-serif;
 }
 
+.special {
+  background-color: white;
+  color: black;
+  box-shadow: inset 0 -3px 1px rgba(0, 0, 0, 0.296);
+  font-weight: bold;
+}
+
+.font-kalam {
+  font-family: "Kalam", cursive;
+}
+.font-rock-salt {
+  font-family: "Rock Salt", cursive;
+}
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {

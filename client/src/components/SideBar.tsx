@@ -10,23 +10,25 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { Bot, Key, User } from 'lucide-react';
+import { Bot, Key, Swords } from 'lucide-react';
 import { Link } from 'react-router';
 import type { JSX } from 'react/jsx-runtime';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import useUser from '@/store/user';
+import { cn } from '@/lib/utils';
 
 const AppSidebar = (): JSX.Element => {
   const { user } = useUser();
 
   return (
-    <Sidebar>
+    <Sidebar className="motion-preset-slide-right-lg">
       <SidebarHeader className="p-3">
         <Link
           to={'/'}
-          className="title-font text-3xl flex items-baseline gap-1"
+          className="title-font text-3xl flex items-baseline justify-center gap-1 motion-preset-t"
         >
-          ChessKhelo <div className="text-xl opacity-65">.online</div>
+          Chess <span className="font-kalam">खेलो</span>{' '}
+          <div className="text-xl opacity-65">.online</div>
         </Link>
       </SidebarHeader>
       <SidebarContent>
@@ -36,8 +38,8 @@ const AppSidebar = (): JSX.Element => {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link to="/game/random" className="text-xl gap-3">
-                    <User className="size-6!" />
+                  <Link to="/game/random" className={cn('text-xl gap-3')}>
+                    <Swords className="size-6!" />
                     Play with random
                   </Link>
                 </SidebarMenuButton>

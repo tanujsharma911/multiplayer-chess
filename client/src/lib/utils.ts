@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const getAnalysis = async (fen: string, level: number) => {
+export const getAnalysis = async (fen: string, level?: number) => {
   const response = await axios
     .post(`https://chess-api.com/v1`, {
       fen,

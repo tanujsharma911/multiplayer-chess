@@ -74,7 +74,7 @@ function App() {
 
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-      <div className="relative h-screen lg:overflow-hidden text-white bg-linear-to-t from-background to-[#121212]">
+      <div className="relative min-h-screen text-white bg-linear-to-t from-background to-[#121212]">
         <SidebarProvider>
           <AppSidebar />
           <main className="w-full">
