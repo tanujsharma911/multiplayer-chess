@@ -32,7 +32,7 @@ const BoardSquare = (props: SquareProps) => {
       key={c + r}
       ref={setNodeRef}
       className={cn(
-        `relative aspect-square ${
+        `relative aspect-square hover:border border-white transition-all ${
           (r + c) % 2 === 0
             ? 'bg-gray-300 text-gray-400'
             : 'bg-gray-400 text-gray-300'

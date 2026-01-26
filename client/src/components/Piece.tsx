@@ -28,6 +28,7 @@ const Piece = (props: PieceProps) => {
           touchAction: 'none', // prevent zooming and scrolling on touch devices
           animationDelay: `${delay}ms`, // Custom delay for stagger effect
         }}
+        draggable="false"
       ></img>
     </DraggablePiece>
   );

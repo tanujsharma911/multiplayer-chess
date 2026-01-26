@@ -15,13 +15,13 @@ import { extractAuthUser } from "./utils/extractAuthUser.js";
 import { User } from "./SocketManager.js";
 const app = express();
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || "*",
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
 }));
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: [process.env.CORS_ORIGIN || "*"],
+        origin: process.env.CORS_ORIGIN,
         credentials: true,
     },
 });
@@ -70,6 +70,7 @@ io.on("connection", (socket) => {
 });
 connectDB().then(() => {
     const PORT = process.env.PORT || 3000;
+    // server.listen(PORT, "0.0.0.0", () => {
     server.listen(PORT, () => {
         console.log("\x1b[32m%s\x1b[0m", `⚙️  Server is running on port http://localhost:${PORT} ...`);
     });

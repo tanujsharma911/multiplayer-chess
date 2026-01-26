@@ -24,7 +24,7 @@ export default function DraggablePiece({
         transform: `translate3d(${transform.x * (blackBottom ? -1 : 1)}px, ${
           transform.y * (blackBottom ? -1 : 1)
         }px, 0)`,
-        zIndex: isDragging ? 1000 : "auto",
+      zIndex: isDragging ? 1000 : "auto",
       }
     : undefined;
 

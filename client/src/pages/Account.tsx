@@ -132,7 +132,7 @@ const Account = () => {
               return (
                 <li
                   key={game._id}
-                  className="p-4 border rounded-lg flex gap-6 items-center justify-between hover:border-gray-700 cursor-pointer"
+                  className="p-4 border rounded-lg flex gap-6 items-center justify-between hover:border-zinc-700 transition-all cursor-pointer"
                 >
                   <Link
                     className="w-full flex items-center justify-between"

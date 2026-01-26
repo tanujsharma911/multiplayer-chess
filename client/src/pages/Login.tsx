@@ -1,12 +1,12 @@
-import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
-import { Key } from "lucide-react";
-import { useGoogleLogin, type CodeResponse } from "@react-oauth/google";
-import { toast } from "sonner";
-import { sendGoogleAuthCode } from "@/api/api";
-import { useState } from "react";
-import useUser from "@/store/user";
-import { useNavigate } from "react-router";
+import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
+import { Key } from 'lucide-react';
+import { useGoogleLogin, type CodeResponse } from '@react-oauth/google';
+import { toast } from 'sonner';
+import { sendGoogleAuthCode } from '@/api/api';
+import { useState } from 'react';
+import useUser from '@/store/user';
+import { useNavigate } from 'react-router';
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -26,33 +26,37 @@ const Login = () => {
         avatar: userData.user.avatar,
       });
 
-      toast.success("Login Successful");
+      toast.success('Login Successful');
 
-      navigate("/");
+      navigate('/');
     }
     setIsLoading(false);
   };
 
   const handleOnError = (
-    error: Pick<CodeResponse, "error" | "error_description" | "error_uri">
+    error: Pick<CodeResponse, 'error' | 'error_description' | 'error_uri'>
   ) => {
-    console.log("Login Failed:", error);
-    toast.error("Login Failed");
+    console.log('Login Failed:', error);
+    toast.error('Login Failed');
     setIsLoading(false);
   };
 
   const login = useGoogleLogin({
     onSuccess: handleOnSuccess,
     onError: handleOnError,
-    flow: "auth-code",
+    flow: 'auth-code',
   });
   return (
-    <div className="w-full h-full flex justify-center items-center">
+    <div className="w-full flex justify-center items-center">
       <div className="max-w-5xl mx-auto mt-5">
         <h1 className="scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">
-          Login
+          Login with Google
         </h1>
-        <div className="p-10">
+        <p className="leading-7 opacity-75 [&:not(:first-child)]:mt-6">
+          Sign in with one click using your Google account to access your
+          account.
+        </p>
+        <div className="p-10 text-center">
           <Button
             onClick={() => {
               login();
@@ -61,7 +65,7 @@ const Login = () => {
             disabled={isLoading}
           >
             {isLoading ? <Spinner /> : <Key />}
-            Sign In With Google
+            Log In With Google
           </Button>
         </div>
       </div>

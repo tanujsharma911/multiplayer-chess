@@ -8,48 +8,50 @@ import { Chess } from 'chess.js';
 
 const Home = () => {
   const navigate = useNavigate();
-  // const { socket } = useSocketStore();
   const { user } = useUser();
 
   const chess = new Chess();
 
   const handleOnClick = () => {
-    navigate('/login');
+    if (!user.isLoggedIn) {
+      navigate('/login');
+      return;
+    }
+    navigate('/game/random');
   };
 
   return (
-    <div className="h-full w-full">
-      <div className="flex flex-col lg:flex-row p-10 h-full w-full">
-        <div className="w-80 mx-auto lg:mx-0 lg:w-120 aspect-square">
+    <div className="w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-[450px_auto] p-10 h-full w-full">
+        <div className="aspect-square max-w-[450px]">
           <Board chess={chess} animate={true} />
         </div>
-        <div className="w-fit p-6">
+        <div className="flex flex-col items-start p-6">
           <h1 className="text-7xl font-bold motion-preset-slide-up-md motion-blur-in-sm">
             Make Chess
           </h1>
           <h1 className="text-7xl font-bold motion-preset-slide-up-md motion-blur-in-sm">
-            Great Again <span className='text-orange-400 text-shadow-lg text-shadow-orange-900/50'>!</span>
+            Great Again{' '}
+            <span className="text-orange-400 text-shadow-lg text-shadow-orange-900/50">
+              !
+            </span>
           </h1>
-          {!user.isLoggedIn && (
-            <Button
-              onClick={handleOnClick}
-              size={'xl'}
-              className="mt-4 font-bold text-lg motion-preset-slide-up-md motion-delay-150 motion-blur-in-sm"
-              variant="special"
-            >
-              <ChessKnight className="size-6!" />
-              Play
-            </Button>
-          )}
+          <p className="leading-6 mt-5 opacity-75">
+            chess.cloud is a real-time multiplayer chess platform with seamless
+            matchmaking and AI gameplay. Players can compete with random
+            opponents or challenge intelligent bots anytime. Built for speed,
+            scalability, and a smooth competitive experience.
+          </p>
+          <Button
+            onClick={handleOnClick}
+            size={'xl'}
+            className="mt-4 font-bold text-lg motion-preset-slide-up-md motion-delay-150 motion-blur-in-sm"
+            variant="special"
+          >
+            <ChessKnight className="size-6!" />
+            Play PvP
+          </Button>
         </div>
-
-        <img
-          src="/img/chess-bg.webp"
-          alt=""
-           draggable="false"
-          className="absolute right-10 -bottom-10 opacity-10 rotate-12 motion-scale-in-0 motion-blur-in-lg"
-          width="400"
-        />
       </div>
     </div>
   );

@@ -10,12 +10,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { Bot, Key, Swords } from 'lucide-react';
+import { Bot, FileCodeCorner, Swords, User } from 'lucide-react';
+import { FaLinkedinIn, FaGithub } from 'react-icons/fa';
 import { Link } from 'react-router';
 import type { JSX } from 'react/jsx-runtime';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import useUser from '@/store/user';
 import { cn } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 const AppSidebar = (): JSX.Element => {
   const { user } = useUser();
@@ -28,7 +29,7 @@ const AppSidebar = (): JSX.Element => {
           className="title-font text-3xl flex items-baseline justify-center gap-1 motion-preset-t"
         >
           Chess <span className="font-kalam">खेलो</span>{' '}
-          <div className="text-xl opacity-65">.online</div>
+          <div className="text-xl opacity-65">.cloud</div>
         </Link>
       </SidebarHeader>
       <SidebarContent>
@@ -55,10 +56,48 @@ const AppSidebar = (): JSX.Element => {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        <SidebarGroup />
+        <SidebarGroup>
+          <SidebarGroupLabel slot="">Pages</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {!user.isLoggedIn && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link to="/login" className="text-xl gap-3">
+                      <User className="size-6!" />
+                      Login
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link to="/docs" className="text-xl gap-3">
+                    <FileCodeCorner className="size-5.5!" />
+                    Documentation
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        {user.isLoggedIn ? (
+        <div className="p-4 flex space-x-4">
+          <Link to="https://github.com/tanujsharma911/multiplayer-chess">
+            <FaGithub
+              className="opacity-60 hover:opacity-100 transition-opacity"
+              size={22}
+            />
+          </Link>
+          <Link to="https://linkedin.com/in/tanujsharma911">
+            <FaLinkedinIn
+              className="opacity-60 hover:opacity-100 transition-opacity"
+              size={22}
+            />
+          </Link>
+        </div>
+        {user.isLoggedIn && (
           <Link
             to={'/account'}
             className="flex items-center gap-2 bg-accent p-2 rounded-md hover:opacity-90"
@@ -75,14 +114,6 @@ const AppSidebar = (): JSX.Element => {
               <p>{user.name}</p>
               <p className="text-xs opacity-80">{user.email}</p>
             </div>
-          </Link>
-        ) : (
-          <Link
-            to="/login"
-            className="flex gap-2 items-center bg-accent p-4 rounded-md hover:opacity-90"
-          >
-            <Key size={20} />
-            Login
           </Link>
         )}
       </SidebarFooter>

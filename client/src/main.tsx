@@ -11,6 +11,7 @@ import AuthLayout from './components/AuthLayout.tsx';
 import Account from './pages/Account.tsx';
 import Analyse from './pages/Analyse.tsx';
 import PlayWithBot from './pages/Bot.tsx';
+import Docs from './pages/Docs.tsx';
 
 const router = createBrowserRouter([
   {
@@ -45,22 +46,10 @@ const router = createBrowserRouter([
         path: '/login',
         element: <Login />,
       },
-      // {
-      //   path: "/signup",
-      //   element: (
-      //     <AuthLayout authRequired={false}>
-      //       <Signup />
-      //     </AuthLayout>
-      //   ),
-      // },
-      // {
-      //   path: "/v/upload",
-      //   element: (
-      //     <AuthLayout authRequired>
-      //       <Upload />
-      //     </AuthLayout>
-      //   ),
-      // },
+      {
+        path: '/docs',
+        element: <Docs />,
+      },
       {
         path: '/account',
         element: (

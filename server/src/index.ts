@@ -22,7 +22,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "*",
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
   })
 );
@@ -30,7 +30,7 @@ app.use(
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: [process.env.CORS_ORIGIN || "*"],
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
   },
 });
