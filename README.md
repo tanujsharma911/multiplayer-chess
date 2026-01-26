@@ -3,8 +3,7 @@
 This project is currently live now.
 
 ## Live Link
-1. Activate the server 
-[Visit Site](https://youtube-clone-7ozu.onrender.com)
+[Visit Site](https://chesskhelo.cloud)
 
 
 ## Documentation
