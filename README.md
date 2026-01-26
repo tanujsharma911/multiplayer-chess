@@ -1,11 +1,13 @@
-# Chess - Realtime online
+# ChessKhelo.cloud - Realtime Multiplayer Chess Game
 
-This project is currently under development. But you can visit the site now!
+This project is currently live now.
 
-## Live Demo
+## Live Link
 1. Activate the server 
-[Visit](https://youtube-clone-7ozu.onrender.com)
+[Visit Site](https://youtube-clone-7ozu.onrender.com)
 
-2. Visit Demo [Visit](https://multiplayer-chess-sigma.vercel.app/)
+
+## Documentation
+[View Project Documentation](https://chesskhelo.cloud/docs)
 
  
