@@ -64,7 +64,7 @@ export class GameManager {
 
   addHandler(user: User) {
     user.socket.on('message', (msg) => {
-      const message = JSON.parse(JSON.stringify(msg));
+      const message = msg;
 
       // NOTE: For high concurrency use a proper lock or queue library.
 
