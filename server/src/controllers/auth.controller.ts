@@ -28,20 +28,28 @@ const googleLogin = async (req: Request, res: Response) => {
       return;
     }
 
-    const googleRes = await oauth2Client.getToken(code as string);
+    const { tokens } = await oauth2Client.getToken({
+      code: code as string,
+      redirect_uri: 'postmessage',
+    });
 
-    oauth2Client.setCredentials(googleRes.tokens);
+    oauth2Client.setCredentials(tokens);
 
-    const userRes = await axios.get(
-      `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${googleRes.tokens.access_token}`
+    const { data } = await axios.get(
+      `https://openidconnect.googleapis.com/v1/userinfo`,
+      {
+        headers: {
+          Authorization: `Bearer ${tokens.access_token}`,
+        },
+      }
     );
 
-    const { name, email, picture } = userRes.data;
+    const { name, email, picture } = data;
 
-    const user = await User.findOne({ email });
+    let user = await User.findOne({ email });
 
     if (!user) {
-      const user = new User({
+      user = new User({
         name,
         email,
         avatar: picture,

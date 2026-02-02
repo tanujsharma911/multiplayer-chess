@@ -42,9 +42,10 @@ const Login = () => {
   };
 
   const login = useGoogleLogin({
+    flow: 'auth-code',
+    redirect_uri: 'postmessage',
     onSuccess: handleOnSuccess,
     onError: handleOnError,
-    flow: 'auth-code',
   });
   return (
     <div className="w-full flex justify-center items-center">
